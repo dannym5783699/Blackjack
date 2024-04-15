@@ -23,6 +23,7 @@ instance Show Rank where
   show Jack  = "J"
   show Queen = "Q"
   show King  = "K"
+  show Ace   = "A"
 
 data Card = Card Suit Rank
   deriving(Eq)
