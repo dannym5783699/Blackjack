@@ -1,1 +1,8 @@
 .DS_Store
+.stack-work/
+*~
+**/.*
+*.o
+*.hi
+Main
+

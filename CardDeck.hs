@@ -1,3 +1,5 @@
+module CardDeck where
+
 data Suit = Diamond | Heart | Spade | Club
   deriving(Eq, Enum)
 
