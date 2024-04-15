@@ -1,5 +1,5 @@
 data Suit = Diamond | Heart | Spade | Club
-  deriving(Eq)
+  deriving(Eq, Enum)
 
 instance Show Suit where
   show Diamond = "\x2666"
@@ -8,7 +8,7 @@ instance Show Suit where
   show Club    = "\x2660"
 
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
-  deriving(Eq, Ord)
+  deriving(Eq, Ord, Enum)
 
 instance Show Rank where
   show Two   = "2"
@@ -24,10 +24,15 @@ instance Show Rank where
   show Queen = "Q"
   show King  = "K"
 
-data Card a b = Card Suit Rank
+data Card = Card Suit Rank
   deriving(Eq)
 
-instance Show (Card a b) where
+instance Show Card where
   show (Card a b) = "[" ++ show a ++ show b ++ "]"
+
+type Deck = [Card]
+
+createDeck :: Deck
+createDeck = [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
 
 
