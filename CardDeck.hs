@@ -27,5 +27,7 @@ instance Show Rank where
 data Card a b = Card Suit Rank
   deriving(Eq)
 
+instance Show (Card a b) where
+  show (Card a b) = "[" ++ show a ++ show b ++ "]"
 
 
