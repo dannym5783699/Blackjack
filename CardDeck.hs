@@ -33,9 +33,15 @@ data Card = Card Suit Rank
 instance Show Card where
   show (Card a b) = "[" ++ show a ++ show b ++ "]"
 
-type Deck = [Card]
+data Deck = Deck [Card]
+
+instance Show Deck where
+  show (Deck (card:cards)) | cards == [] = show card
+                           | otherwise = show card ++ " " ++ show (Deck cards)
 
 createDeck :: Deck
-createDeck = [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
+createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
 
+getFirstCard :: Deck -> Card
+getFirstCard (Deck (card:cards)) = card
 
