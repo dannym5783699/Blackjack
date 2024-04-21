@@ -45,7 +45,19 @@ createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. A
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:cards)) = card
 
-removeCard :: Deck -> Int -> (Deck, Deck)
-removeCard (Deck cards) x = (Deck (drop x cards), Deck (take x cards))
+hasRemainingCards :: Deck -> Int -> Bool
+hasRemainingCards (Deck []) _ = False
+hasRemaingingCards (Deck cards) n
+  | length cards < n = False
+  | otherwise = True
+
+takeXCards :: Deck -> Int -> Deck
+takeXCards (Deck cards) n = Deck (take n cards)
+
+addToRemovedDeck :: Deck -> Deck -> Deck
+addToRemovedDeck (Deck nrmCards) (Deck rmCards) = Deck (nrmCards ++ rmCards)
+
+removeCard :: Deck -> Int -> Deck
+removeCard (Deck cards) x = Deck (drop x cards)
 
 
