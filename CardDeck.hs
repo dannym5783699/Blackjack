@@ -45,3 +45,6 @@ createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. A
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:cards)) = card
 
+removeCard :: Deck -> Int -> Deck
+removeCard (Deck cards) x = Deck (drop x cards )
+
