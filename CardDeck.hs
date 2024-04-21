@@ -1,5 +1,12 @@
 module CardDeck where
 
+import           System.Random
+
+printRNDNum :: IO ()
+printRNDNum = do
+  num <- randomRIO (1, 100) :: IO Int
+  putStrLn $ "Random number between 1 and 100: " ++ show num
+
 data Suit = Diamond | Heart | Spade | Club
   deriving(Eq, Enum)
 
