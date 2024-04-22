@@ -4,7 +4,6 @@
   - [homebrew](#how-to-install-homebrew)
   - [ghc](#how-to-install-ghc)
   - [cabal](#how-to-install-cabal)
-  - [System.Random](#how-to-install-systemrandom)
 - [How to Build and Run CLI](#how-to-build-and-run-cli)
 - [How to Test a Module](#how-to-test-a-module)
 - [How to play Regular Black Jack](#opperation-of-cli)
@@ -13,7 +12,6 @@
   - [homebrew](#how-to-install-homebrew)
   - [ghc](#how-to-install-ghc)
   - [cabal](#how-to-install-cabal)
-  - [System.Random](#how-to-install-systemrandom)
 
 ***Warning: For MAC Users ONLY***
 ### How to Install `homebrew`
@@ -28,23 +26,18 @@ brew install ghc
 ```bash
 brew install ghc cabal-install
 ```
-### How to Install `System.Random`
-```bash
-cabal update
-cabal install --lib random
-```
 
 ## How to Build and Run CLI
 ### Build Game
 ```bash
-ghc -package random Main.hs
+cabal build
 ```
 ### Run Game
 ```bash
-./Main
+cabal run
 ```
 
-## How to Test a Module
+## How to Test a Module with random
 ```bash
 ghci -package random CardDeck.hs
 ```
