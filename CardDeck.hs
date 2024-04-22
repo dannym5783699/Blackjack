@@ -40,11 +40,13 @@ data Card = Card Suit Rank
 instance Show Card where
   show (Card a b) = "[" ++ show a ++ show b ++ "]"
 
-data Deck = Deck [Card]
+data Deck = EmptyDeck | Deck [Card]
 
 instance Show Deck where
-  show (Deck (card:cards)) | cards == [] = show card
-                           | otherwise = show card ++ " " ++ show (Deck cards)
+  show EmptyDeck = "[]"
+  show (Deck (card:cards))
+    | cards == [] = show card
+    | otherwise = show card ++ " " ++ show (Deck cards)
 
 createDeck :: Deck
 createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
@@ -66,5 +68,10 @@ addToRemovedDeck (Deck nrmCards) (Deck rmCards) = Deck (nrmCards ++ rmCards)
 
 removeCard :: Deck -> Int -> Deck
 removeCard (Deck cards) x = Deck (drop x cards)
+
+dealCard :: Deck -> Deck -> Deck -> (Deck, Deck, Deck)
+dealCard EmptyDeck EmptyDeck (Deck playCards) = (Deck (take 1 playCards), Deck (take 1 playCards), Deck (drop 1 playCards))
+dealCard EmptyDeck (Deck rCards) (Deck playCards) = (Deck (take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
+dealCard (Deck hand) (Deck rCards) (Deck playCards) = (Deck (hand ++ take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
 
 
