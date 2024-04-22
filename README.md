@@ -50,6 +50,14 @@ ghci -package random CardDeck.hs
 ```
 
 ## Opperation of CLI
-- CLI will print out the top two cards in a deck
-- CLI will the prompt the user if they want to continue
-- Will ten print the next two cards in the deck
+- Prints out the Dealers hand with one card represented as a flipped over card
+- Prints out the Players Hand with both cards showing
+- Hand is delt first card to player next card to dealer and so on until each person has two cards
+- Asks the user if it would like to continue
+```txt
+"Dealer Hand"
+[♦3] [*]
+"Player Hand"
+[♦2] [♦4]
+"Would you like another card? ('Y' or 'N')"
+```
