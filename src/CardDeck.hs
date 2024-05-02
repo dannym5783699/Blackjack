@@ -43,10 +43,9 @@ instance Show Card where
 data Deck = EmptyDeck | Deck [Card]
 
 instance Show Deck where
-  show EmptyDeck = "[]"
-  show (Deck (card:cards))
-    | cards == [] = show card
-    | otherwise = show card ++ " " ++ show (Deck cards)
+  show EmptyDeck           = "[]"
+  show (Deck [])           = ""
+  show (Deck (card:cards)) = show card ++ " " ++ show (Deck cards)
 
 createDeck :: Deck
 createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
@@ -74,4 +73,20 @@ dealCard EmptyDeck EmptyDeck (Deck playCards) = (Deck (take 1 playCards), Deck (
 dealCard EmptyDeck (Deck rCards) (Deck playCards) = (Deck (take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
 dealCard (Deck hand) (Deck rCards) (Deck playCards) = (Deck (hand ++ take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
 
+-- Returns a tupal of the cards, first value is low value, second value is high value
+cardToInt :: Card -> (Int, Int)
+cardToInt (Card _ r1) = case r1 of
+  Two   -> (2,2)
+  Three -> (3,3)
+  Four  -> (4,4)
+  Five  -> (5,5)
+  Six   -> (6,6)
+  Seven -> (7,7)
+  Eight -> (8,8)
+  Nine  -> (9,9)
+  Ten   -> (10,10)
+  Jack  -> (10,10)
+  Queen -> (10,10)
+  King  -> (10,10)
+  Ace   -> (1,10)
 
