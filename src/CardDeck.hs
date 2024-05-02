@@ -51,7 +51,7 @@ createDeck :: Deck
 createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
 
 getFirstCard :: Deck -> Card
-getFirstCard (Deck (card:cards)) = card
+getFirstCard (Deck (card:_)) = card
 
 hasRemainingCards :: Deck -> Int -> Bool
 hasRemainingCards (Deck []) _ = False
@@ -90,3 +90,9 @@ cardToInt (Card _ r1) = case r1 of
   King  -> (10,10)
   Ace   -> (1,10)
 
+getHandValue :: Deck -> (Int,Int)
+getHandValue EmptyDeck = (0,0)
+getHandValue (Deck cards) = foldr (\card -> addCardValues (cardToInt card)) (0,0) cards
+
+addCardValues :: (Int,Int) -> (Int,Int) -> (Int,Int)
+addCardValues (a,b) (c,d) = (a + c, b + d)
