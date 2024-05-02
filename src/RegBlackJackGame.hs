@@ -20,7 +20,7 @@ gameLoop playDeck rmDeck
       char <- getChar
       if char == 'Y' || char == 'y'
       then do
-        char <- getChar
+        _ <- getChar
         gameLoop newPlayDeck newRMDeck
       else print "Thank you for Playing!"
   | otherwise = print "There are no cards left in the deck, Thank you for Playing!"
