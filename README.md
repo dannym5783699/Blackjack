@@ -46,15 +46,53 @@ ghci -package random CardDeck.hs
 - Prints out the Dealers hand with one card represented as a flipped over card
 - Prints out the Players Hand with both cards showing
 - Hand is delt first card to player next card to dealer and so on until each person has two cards
+- As long as the player can pick another card it will prompt the user to get the next card.
 - Plays the Dealers Hand Taking New cards until the dealers hand has at least a soft 17
 - Prints out the dealers full hand
 - Asks the user if it would like to continue
 ```txt
-"Dealer Hand"
+Dealers Hand
 [♦3] [*]
-"Player Hand"
-[♦2] [♦4]
-Dealers New Hand
-[♦3] [♦5] [♦6] [♦7] 
-"Would you like another card? ('Y' or 'N')"
+Players Hand
+[♦2] [♦4] 
+
+Would you like a card? ('Y' or 'N')
+y
+
+Your New Hand
+[♦2] [♦4] [♦6] 
+
+Would you like a card? ('Y' or 'N')
+y
+
+Your New Hand
+[♦2] [♦4] [♦6] [♦7] 
+
+Would you like a card? ('Y' or 'N')
+n
+
+Dealers Hand
+[♦3] [♦5] [♦8] [♦9] 
+Players Hand
+[♦2] [♦4] [♦6] [♦7] 
+
+"Would you like to play again? ('Y' or 'N')"
+y
+
+Dealers Hand
+[♦J] [*]
+Players Hand
+[♦10] [♦Q] 
+
+Would you like a card? ('Y' or 'N')
+n
+
+Dealers Hand
+[♦J] [♦K] 
+Players Hand
+[♦10] [♦Q] 
+
+"Would you like to play again? ('Y' or 'N')"
+n
+"Thank you for Playing!"
 ```
