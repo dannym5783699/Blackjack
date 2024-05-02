@@ -43,16 +43,15 @@ instance Show Card where
 data Deck = EmptyDeck | Deck [Card]
 
 instance Show Deck where
-  show EmptyDeck = "[]"
-  show (Deck (card:cards))
-    | cards == [] = show card
-    | otherwise = show card ++ " " ++ show (Deck cards)
+  show EmptyDeck           = "[]"
+  show (Deck [])           = ""
+  show (Deck (card:cards)) = show card ++ " " ++ show (Deck cards)
 
 createDeck :: Deck
 createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
 
 getFirstCard :: Deck -> Card
-getFirstCard (Deck (card:cards)) = card
+getFirstCard (Deck (card:_)) = card
 
 hasRemainingCards :: Deck -> Int -> Bool
 hasRemainingCards (Deck []) _ = False
@@ -74,4 +73,36 @@ dealCard EmptyDeck EmptyDeck (Deck playCards) = (Deck (take 1 playCards), Deck (
 dealCard EmptyDeck (Deck rCards) (Deck playCards) = (Deck (take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
 dealCard (Deck hand) (Deck rCards) (Deck playCards) = (Deck (hand ++ take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
 
+-- Returns a tupal of the cards, first value is low value, second value is high value
+cardToInt :: Card -> (Int, Int)
+cardToInt (Card _ r1) = case r1 of
+  Two   -> (2,2)
+  Three -> (3,3)
+  Four  -> (4,4)
+  Five  -> (5,5)
+  Six   -> (6,6)
+  Seven -> (7,7)
+  Eight -> (8,8)
+  Nine  -> (9,9)
+  Ten   -> (10,10)
+  Jack  -> (10,10)
+  Queen -> (10,10)
+  King  -> (10,10)
+  Ace   -> (1,11)
 
+-- Gets the value of the hand, first value is the low value, second value is the high value
+getHandValue :: Deck -> (Int,Int)
+getHandValue EmptyDeck = (0,0)
+getHandValue (Deck cards) = foldr (\card -> addCardValues (cardToInt card)) (0,0) cards
+
+-- Adds the Value of two Cards, but in int form
+addCardValues :: (Int,Int) -> (Int,Int) -> (Int,Int)
+addCardValues (a,b) (c,d) = (a + c, b + d)
+
+-- Tells the dealer to draw on anything above a soft 17
+doesDealerDraw :: Deck -> Bool
+doesDealerDraw EmptyDeck = True
+doesDealerDraw deck = case (getHandValue deck) of
+  (_,h) | h < 17 -> True
+        | h >= 17 -> False
+  (_,_) -> True
