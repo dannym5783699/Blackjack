@@ -104,5 +104,5 @@ doesDealerDraw :: Deck -> Bool
 doesDealerDraw EmptyDeck = True
 doesDealerDraw deck = case (getHandValue deck) of
   (_,h) | h < 17 -> True
-        | h > 17 -> False
+        | h >= 17 -> False
   (_,_) -> True
