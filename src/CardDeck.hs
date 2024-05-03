@@ -116,14 +116,17 @@ hasBlackJack hand = go (getHandValue hand)
  where
   go (_,h) = h == 21
 
+-- Used to keep track of the results of each round
 data Result = DealerWon | PlayerWon | BothOver | Tie Int
 
+-- Used to Print out a message of the results to the user
 instance Show Result where
   show DealerWon = "The Dealer Wins"
   show PlayerWon = "You WON!"
   show BothOver  = "Both you and the dealer went over 21"
   show (Tie n)   = "It was a draw with value: " ++ show n
 
+-- Determines the results of each round
 determinResults :: Deck -> Deck -> Result
 determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandValue playerHand)
   where

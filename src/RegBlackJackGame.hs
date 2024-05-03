@@ -104,6 +104,7 @@ resetGameLoop discPile playDeck = do
     gameLoop discPile playDeck
   else print "Thank you for Playing!"
 
+-- Prints the results in a readable format to the user
 printResults :: Deck -> Deck -> IO ()
 printResults dealerHand playerHand = do
   putStrLn ""
