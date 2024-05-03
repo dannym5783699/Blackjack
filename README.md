@@ -96,3 +96,21 @@ Players Hand
 n
 "Thank you for Playing!"
 ```
+- If the player or the dealer or both get BlackJack it will prevent the user from continueing and start a new round
+```txt
+Dealers Hand
+[♦K] [*]
+Players Hand
+[♦Q] [♦A] 
+
+You have BLACKJACK!!
+
+Dealers Hand
+[♦K] [♥2] 
+Players Hand
+[♦Q] [♦A] 
+
+Would you like to play again? ('Y' or 'N')
+n
+"Thank you for Playing!"
+```
