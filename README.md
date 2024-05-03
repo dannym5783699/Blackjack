@@ -50,49 +50,63 @@ ghci -package random CardDeck.hs
 - Plays the Dealers Hand Taking New cards until the dealers hand has at least a soft 17
 - Prints out the dealers full hand
 - Asks the user if it would like to continue
+- Determines the winner and looser at the end of each round
 ```txt
+
 Dealers Hand
 [♦3] [*]
 Players Hand
 [♦2] [♦4] 
 
 Would you like a card? ('Y' or 'N')
+n
+
+Dealers Hand
+[♦3] [♦5] [♦6] [♦7] 
+Players Hand
+[♦2] [♦4] 
+
+
+The Dealer Wins
+
+Would you like to play again? ('Y' or 'N')
 y
 
-Your New Hand
-[♦2] [♦4] [♦6] 
-
-Would you like a card? ('Y' or 'N')
-y
-
-Your New Hand
-[♦2] [♦4] [♦6] [♦7] 
+Dealers Hand
+[♦9] [*]
+Players Hand
+[♦8] [♦10] 
 
 Would you like a card? ('Y' or 'N')
 n
 
 Dealers Hand
-[♦3] [♦5] [♦8] [♦9] 
+[♦9] [♦J] 
 Players Hand
-[♦2] [♦4] [♦6] [♦7] 
+[♦8] [♦10] 
 
-"Would you like to play again? ('Y' or 'N')"
+
+The Dealer Wins
+
+Would you like to play again? ('Y' or 'N')
 y
 
 Dealers Hand
-[♦J] [*]
+[♦K] [*]
 Players Hand
-[♦10] [♦Q] 
+[♦Q] [♦A] 
 
-Would you like a card? ('Y' or 'N')
-n
+You have BLACKJACK!!
 
 Dealers Hand
-[♦J] [♦K] 
+[♦K] [♥2] 
 Players Hand
-[♦10] [♦Q] 
+[♦Q] [♦A] 
 
-"Would you like to play again? ('Y' or 'N')"
+
+You WON!
+
+Would you like to play again? ('Y' or 'N')
 n
 "Thank you for Playing!"
 ```
