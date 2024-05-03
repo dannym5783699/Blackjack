@@ -1,5 +1,4 @@
 module CardDeck where
-
 import           System.Random
 
 printRNDNum :: IO ()
@@ -116,3 +115,21 @@ hasBlackJack :: Deck -> Bool
 hasBlackJack hand = go (getHandValue hand)
  where
   go (_,h) = h == 21
+
+data Result = DealerWon | PlayerWon | BothOver | Tie Int
+
+instance Show Result where
+  show DealerWon = "The Dealer Wins"
+  show PlayerWon = "You WON!"
+  show BothOver  = "Both you and the dealer went over 21"
+  show (Tie n)   = "It was a draw with value: " ++ show n
+
+determinResults :: Deck -> Deck -> Result
+determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandValue playerHand)
+  where
+    go (ld, hd) (lp, hp)
+      | ld > 21 && lp > 21 = BothOver
+      | hd <= 21 && hd == hp = Tie hd
+      | hd > 21 && ld == lp = Tie ld
+      | (ld > 21) || (hp <=21 && hd > 21 && ld < hp) || (hp > 21 && hd > 21 && ld < lp) || (hd <= 21 && hp <= 21 && hd < hp)= PlayerWon
+      | otherwise = DealerWon

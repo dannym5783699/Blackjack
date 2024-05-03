@@ -18,22 +18,26 @@ gameLoop discPile playDeck
     if ((hasBlackJack playerHand1) && (hasBlackJack dealerHand1)) then do
       putStrLn "You both have BlackJack it is a Tie"
       printHands dealerHand1 playerHand1 True
+      printResults dealerHand1 playerHand1
       resetGameLoop discPile1 playDeck1
 
     else if hasBlackJack playerHand1 then do
       putStrLn "You have BLACKJACK!!"
       printHands dealerHand1 playerHand1 True
+      printResults dealerHand1 playerHand1
       resetGameLoop discPile1 playDeck1
 
     else if hasBlackJack dealerHand1 then do
       putStrLn "Dealer has Blackjack, you loose"
       printHands dealerHand1 playerHand1 True
+      printResults dealerHand1 playerHand1
       resetGameLoop discPile1 playDeck1
 
     else do
       (playerHand2, discPile2, playDeck2) <- takePlayerTurn playerHand1 discPile1 playDeck1
       let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
       printHands dealerHand2 playerHand2 True
+      printResults dealerHand2 playerHand2
       resetGameLoop discPile3 playDeck3
 
   | otherwise = print "There are no cards left in the deck, Thank you for Playing!"
@@ -99,3 +103,9 @@ resetGameLoop discPile playDeck = do
     _ <- getChar
     gameLoop discPile playDeck
   else print "Thank you for Playing!"
+
+printResults :: Deck -> Deck -> IO ()
+printResults dealerHand playerHand = do
+  putStrLn ""
+  putStrLn (show (determinResults dealerHand playerHand))
+  putStrLn ""
