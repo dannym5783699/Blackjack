@@ -103,15 +103,16 @@ addCardValues (a,b) (c,d) = (a + c, b + d)
 doesDealerDraw :: Deck -> Bool
 doesDealerDraw hand = go (getHandValue hand)
   where
-    go (_,h)
-      | h < 17 = True
-      | otherwise = False
+    go (_,h) = h < 17
 
 -- Returns True if the players hand is less then a hard 21
 canPlayerPlay :: Deck -> Bool
 canPlayerPlay hand = go (getHandValue hand)
   where
-    go (l,_)
-      | l < 21 = True
-      | otherwise = False
+    go (l,_) = l < 21
 
+-- Determines if the hand equals 21 or BlackJack
+hasBlackJack :: Deck -> Bool
+hasBlackJack hand = go (getHandValue hand)
+ where
+  go (_,h) = h == 21

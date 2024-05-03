@@ -4,25 +4,38 @@ import           CardDeck
 
 startGameLoop :: IO ()
 startGameLoop = do
-  let fullDeck = createDeck
+  let playDeck = createDeck
   let discPile = EmptyDeck
-  gameLoop fullDeck discPile
+  gameLoop discPile playDeck
 
+-- The main loop for the game that starts that plays each rounc
 gameLoop :: Deck -> Deck -> IO ()
-gameLoop playDeck discPile
+gameLoop discPile playDeck
   | hasRemaingingCards playDeck 4 = do
     let (playerHand1, dealerHand1, discPile1, playDeck1) = dealHand playDeck discPile
     printHands dealerHand1 playerHand1 False
-    (playerHand2, discPile2, playDeck2) <- takePlayerTurn playerHand1 discPile1 playDeck1
-    let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
-    printHands dealerHand2 playerHand2 True
-    print "Would you like to play again? ('Y' or 'N')"
-    char <- getChar
-    if char == 'Y' || char == 'y'
-    then do
-      _ <- getChar
-      gameLoop playDeck3 discPile3
-    else print "Thank you for Playing!"
+
+    if ((hasBlackJack playerHand1) && (hasBlackJack dealerHand1)) then do
+      putStrLn "You both have BlackJack it is a Tie"
+      printHands dealerHand1 playerHand1 True
+      resetGameLoop discPile1 playDeck1
+
+    else if hasBlackJack playerHand1 then do
+      putStrLn "You have BLACKJACK!!"
+      printHands dealerHand1 playerHand1 True
+      resetGameLoop discPile1 playDeck1
+
+    else if hasBlackJack dealerHand1 then do
+      putStrLn "Dealer has Blackjack, you loose"
+      printHands dealerHand1 playerHand1 True
+      resetGameLoop discPile1 playDeck1
+
+    else do
+      (playerHand2, discPile2, playDeck2) <- takePlayerTurn playerHand1 discPile1 playDeck1
+      let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
+      printHands dealerHand2 playerHand2 True
+      resetGameLoop discPile3 playDeck3
+
   | otherwise = print "There are no cards left in the deck, Thank you for Playing!"
 
 -- Deals out the player and dealers hand alternating cards first to player then to the dealer
@@ -75,3 +88,14 @@ printHands dealerHand playerHand showDealersFullHand = do
   putStrLn "Players Hand"
   putStrLn (show playerHand)
   putStrLn ""
+
+-- Resets the game loop with the discard Pile and the play deck you want
+resetGameLoop :: Deck -> Deck -> IO ()
+resetGameLoop discPile playDeck = do
+  putStrLn "Would you like to play again? ('Y' or 'N')"
+  char <- getChar
+  if char == 'Y' || char == 'y'
+  then do
+    _ <- getChar
+    gameLoop discPile playDeck
+  else print "Thank you for Playing!"
