@@ -1,4 +1,4 @@
-module CardDeck where
+module CardDeckMAC where
 import           System.Random
 
 printRNDNum :: IO ()
@@ -10,10 +10,10 @@ data Suit = Diamond | Heart | Spade | Club
   deriving(Eq, Enum)
 
 instance Show Suit where
-  show Diamond = "\x0004"
-  show Heart   = "\x0003"
-  show Spade   = "\x0006"
-  show Club    = "\x0005"
+  show Diamond = "\x2666"
+  show Heart   = "\x2665"
+  show Spade   = "\x2663"
+  show Club    = "\x2660"
 
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
   deriving(Eq, Ord, Enum)
@@ -59,10 +59,6 @@ addDecks EmptyDeck n = n
 addDecks n EmptyDeck = n
 addDecks (Deck n) (Deck c) = Deck (n ++ c)
 
-<<<<<<< Updated upstream:src/CardDeck.hs
-=======
-
->>>>>>> Stashed changes:src/CardDeckWIND.hs
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:_)) = card
 
