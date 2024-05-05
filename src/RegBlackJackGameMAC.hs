@@ -1,9 +1,9 @@
-module RegBlackJackGame where
+module RegBlackJackGameMAC where
 
-import           CardDeck
+import           CardDeckMAC
 
-startGameLoop :: IO ()
-startGameLoop = do
+startGameLoopMAC :: IO ()
+startGameLoopMAC = do
   let playDeck = createDeck
   let discPile = EmptyDeck
   gameLoop discPile playDeck

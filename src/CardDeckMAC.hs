@@ -1,4 +1,4 @@
-module CardDeck where
+module CardDeckMAC where
 import           System.Random
 
 printRNDNum :: IO ()
