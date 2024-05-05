@@ -4,8 +4,10 @@
   - [homebrew](#how-to-install-homebrew)
   - [ghc](#how-to-install-ghc)
   - [cabal](#how-to-install-cabal)
-- [How to Build and Run CLI](#how-to-build-and-run-cli)
+- [How to Build CLI](#how-to-build-cli)
 - [How to Test a Module](#how-to-test-a-module)
+- [How to Run On Mac](#how-to-run-on-mac)
+- [How to Run on Windows](#how-to-run-on-windows)
 - [How to play Regular Black Jack](#opperation-of-cli)
 
 ## Prerequisites 
@@ -27,19 +29,28 @@ brew install ghc
 brew install ghc cabal-install
 ```
 
-## How to Build and Run CLI
+## How to Build CLI
 ### Build Game
 ```bash
+cabal update
 cabal build
-```
-### Run Game
-```bash
-cabal run
 ```
 
 ## How to Test a Module with random
 ```bash
 ghci -package random CardDeck.hs
+```
+
+## How to Run on Mac
+### Run Game as CLI
+```bash
+cabal run exes -- --mac
+```
+
+## How to Run on Windows
+### Run Game as CLI
+```bash
+cabal run exes -- --wind
 ```
 
 ## Opperation of CLI
