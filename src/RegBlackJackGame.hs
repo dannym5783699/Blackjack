@@ -1,12 +1,23 @@
 module RegBlackJackGame where
 
-import           CardDeck
+import CardDeck
+import Data.Char
 
 startGameLoop :: IO ()
 startGameLoop = do
-  let playDeck = createDeck
-  let discPile = EmptyDeck
-  gameLoop discPile playDeck
+  putStrLn "Enter number of decks [1-6]"
+  char <- getChar
+  if (isDigit char && char > '0' && char < '7') then do 
+    _ <- getChar
+    let num = digitToInt char
+    let playDeck = createVarDeck num
+    let discPile = EmptyDeck
+    gameLoop discPile playDeck
+  else do
+    _ <- getChar
+    let playDeck = createDeck
+    let discPile = EmptyDeck
+    gameLoop discPile playDeck
 
 -- The main loop for the game that starts that plays each rounc
 gameLoop :: Deck -> Deck -> IO ()
