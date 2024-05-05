@@ -1,18 +1,10 @@
 module RegBlackJackGame where
 
-<<<<<<< Updated upstream:src/RegBlackJackGame.hs
-import CardDeck
-import Data.Char
-
-startGameLoop :: IO ()
-startGameLoop = do
-=======
 import           CardDeckMAC
 import Data.Char
 
 startGameLoopMAC :: IO ()
 startGameLoopMAC = do
->>>>>>> Stashed changes:src/RegBlackJackGameMAC.hs
   putStrLn "Enter number of decks [1-6]"
   char <- getChar
   if (isDigit char && char > '0' && char < '7') then do 
@@ -26,10 +18,6 @@ startGameLoopMAC = do
     let playDeck = createDeck
     let discPile = EmptyDeck
     gameLoop discPile playDeck
-<<<<<<< Updated upstream:src/RegBlackJackGame.hs
-=======
-
->>>>>>> Stashed changes:src/RegBlackJackGameMAC.hs
 
 -- The main loop for the game that starts that plays each rounc
 gameLoop :: Deck -> Deck -> IO ()
