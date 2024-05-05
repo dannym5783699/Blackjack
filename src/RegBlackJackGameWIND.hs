@@ -1,6 +1,6 @@
 module RegBlackJackGameWIND where
 
-import           CardDeckWIND
+import CardDeckWIND
 import Data.Char
 
 

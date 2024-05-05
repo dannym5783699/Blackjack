@@ -1,4 +1,4 @@
-module RegBlackJackGame where
+module RegBlackJackGameMAC where
 
 import           CardDeckMAC
 import Data.Char
