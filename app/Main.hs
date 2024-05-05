@@ -1,7 +1,20 @@
 module Main where
 
-import           RegBlackJackGame
+import           RegBlackJackGameMAC
+import           RegBlackJackGameWIND
+import           System.Environment
 
 main :: IO ()
 main = do
-  startGameLoop
+  args <- getArgs
+  case args of
+    ["--wind"] -> startGameLoopWIND
+    ["--mac"]  -> startGameLoopMAC
+    _          -> printErrorMessage
+
+printErrorMessage :: IO ()
+printErrorMessage = do
+  putStrLn ""
+  putStrLn "Available Commands:"
+  putStrLn "\twind  -  launches CLI app for windows users"
+  putStrLn "\tmac   -  launches CLI app for mac users"
