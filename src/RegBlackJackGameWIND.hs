@@ -3,20 +3,24 @@ module RegBlackJackGameWIND where
 import           CardDeckWIND
 import           Data.Char
 
+import           ShuffleDeckWIND   -- Import the WIND-specific shuffle function
+
+
 
 startGameLoopWIND :: IO ()
 startGameLoopWIND = do
   putStrLn "Enter number of decks [1-6]"
   char <- getChar
-  if (isDigit char && char > '0' && char < '7') then do
-    _ <- getChar
+  if isDigit char && char > '0' && char < '7' then do
+    _ <- getChar  -- consume the newline after input
     let num = digitToInt char
-    let playDeck = createVarDeck num
+    playDeck <- shuffleDeckWIND (createVarDeck num)  -- shuffle after creating the variable deck
     let discPile = EmptyDeck
     gameLoop discPile playDeck
   else do
-    _ <- getChar
-    let playDeck = createDeck
+    _ <- getChar  -- consume the newline after input
+    putStrLn "Invalid input, defaulting to standard deck."
+    playDeck <- shuffleDeckWIND createDeck  -- Use the shuffle function
     let discPile = EmptyDeck
     gameLoop discPile playDeck
 
