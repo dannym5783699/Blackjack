@@ -6,8 +6,9 @@
   - [cabal](#how-to-install-cabal)
 - [How to Build CLI](#how-to-build-cli)
 - [How to Test a Module](#how-to-test-a-module)
-- [How to Run On Mac](#how-to-run-on-mac)
-- [How to Run on Windows](#how-to-run-on-windows)
+- [How to Run CLI On Mac](#how-to-run-on-mac)
+- [How to Run CLI on Windows](#how-to-run-on-windows)
+- [How to Run GUI]()
 - [How to play Regular Black Jack](#opperation-of-cli)
 
 ## Prerequisites 
@@ -51,6 +52,12 @@ cabal run exes -- --mac
 ### Run Game as CLI
 ```bash
 cabal run exes -- --wind
+```
+
+## How to Run GUI
+### Run Game in the GUI
+```bash
+cabal run exes -- --mac --gui
 ```
 
 ## Opperation of CLI
