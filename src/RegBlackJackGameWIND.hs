@@ -1,14 +1,14 @@
 module RegBlackJackGameWIND where
 
-import CardDeckWIND
-import Data.Char
+import           CardDeckWIND
+import           Data.Char
 
 
 startGameLoopWIND :: IO ()
 startGameLoopWIND = do
   putStrLn "Enter number of decks [1-6]"
   char <- getChar
-  if (isDigit char && char > '0' && char < '7') then do 
+  if (isDigit char && char > '0' && char < '7') then do
     _ <- getChar
     let num = digitToInt char
     let playDeck = createVarDeck num

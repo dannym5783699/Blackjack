@@ -55,8 +55,8 @@ createVarDeck n = addDecks createDeck (createVarDeck (n-1))
 
 
 addDecks :: Deck -> Deck -> Deck
-addDecks EmptyDeck n = n 
-addDecks n EmptyDeck = n
+addDecks EmptyDeck n       = n
+addDecks n EmptyDeck       = n
 addDecks (Deck n) (Deck c) = Deck (n ++ c)
 
 getFirstCard :: Deck -> Card

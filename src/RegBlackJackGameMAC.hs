@@ -1,13 +1,13 @@
 module RegBlackJackGameMAC where
 
 import           CardDeckMAC
-import Data.Char
+import           Data.Char
 
 startGameLoopMAC :: IO ()
 startGameLoopMAC = do
   putStrLn "Enter number of decks [1-6]"
   char <- getChar
-  if (isDigit char && char > '0' && char < '7') then do 
+  if (isDigit char && char > '0' && char < '7') then do
     _ <- getChar
     let num = digitToInt char
     let playDeck = createVarDeck num

@@ -18,4 +18,3 @@ printErrorMessage = do
   putStrLn "Available Commands:"
   putStrLn "\twind  -  launches CLI app for windows users"
   putStrLn "\tmac   -  launches CLI app for mac users"
-
