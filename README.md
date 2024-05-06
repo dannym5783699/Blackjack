@@ -8,7 +8,7 @@
 - [How to Test a Module](#how-to-test-a-module)
 - [How to Run CLI On Mac](#how-to-run-on-mac)
 - [How to Run CLI on Windows](#how-to-run-on-windows)
-- [How to Run GUI]()
+- [How to Run GUI](#how-to-run-gui)
 - [How to play Regular Black Jack](#opperation-of-cli)
 
 ## Prerequisites 
