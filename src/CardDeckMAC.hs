@@ -49,6 +49,16 @@ instance Show Deck where
 createDeck :: Deck
 createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
 
+createVarDeck :: Int -> Deck
+createVarDeck 1 = createDeck
+createVarDeck n = addDecks createDeck (createVarDeck (n-1))
+
+
+addDecks :: Deck -> Deck -> Deck
+addDecks EmptyDeck n = n 
+addDecks n EmptyDeck = n
+addDecks (Deck n) (Deck c) = Deck (n ++ c)
+
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:_)) = card
 
