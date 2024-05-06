@@ -1,7 +1,7 @@
 module ShuffleDeck where
 
-import System.Random
-import CardDeckMAC (Deck(..))
+import           CardDeckMAC   (Deck (..))
+import           System.Random
 
 -- Fisher-Yates shuffle algorithm implementation
 shuffleDeck :: Deck -> IO Deck

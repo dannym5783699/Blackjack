@@ -69,7 +69,8 @@ library
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.19.1.0,
-                      random
+                      random,
+                      gloss
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -94,7 +95,7 @@ executable haskell-final
     build-depends:
         base ^>=4.19.1.0,
         haskell-final,
-        brick
+        gloss
 
     -- Directories containing source files.
     hs-source-dirs:   app
