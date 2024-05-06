@@ -11,13 +11,19 @@ startGUI = do
   display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture playDeck)
 
 fullDisplayPicture :: Deck -> Picture
-fullDisplayPicture playDeck = pictures ([titlePicture] ++ (cardPictures (takeXCards playDeck 3)))
+fullDisplayPicture playDeck = pictures ([titlePicture] ++ (cardPictures 150 (takeXCards playDeck 3)))
 
 
-cardPictures :: Deck -> [Picture]
-cardPictures EmptyDeck = []
-cardPictures (Deck []) = []
-cardPictures (Deck (c:cs)) = clubCardPicture 150 (getMinWidth (length (c:cs))) c : cardPictures (Deck cs)
+cardPictures :: Float -> Deck -> [Picture]
+cardPictures _ EmptyDeck = []
+cardPictures _ (Deck []) = []
+cardPictures height (Deck (c:cs)) = go c (length (c:cs)): cardPictures height (Deck cs)
+  where
+    go (Card s r) numCards = case s of
+      Diamond -> diamondCardPicture height (getMinWidth numCards) (Card s r)
+      Heart   -> heartCardPicture height (getMinWidth numCards) (Card s r)
+      Spade   -> spadeCardPicture height (getMinWidth numCards) (Card s r)
+      Club    -> clubCardPicture height (getMinWidth numCards) (Card s r)
 
 
 getMinWidth :: Int -> Float
