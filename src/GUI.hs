@@ -2,16 +2,19 @@ module GUI where
 
 import           CardDeckMAC
 import           Graphics.Gloss
+import           RegBlackJackGameMAC
+import           ShuffleDeck
 
 
 startGUI :: IO ()
 startGUI = do
-  let playDeck = createDeck
+  shuffledDeck <- shuffleDeck createDeck
+  let (playerHand, dealerHand, discPile, playDeck) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture playDeck)
+  display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
-fullDisplayPicture :: Deck -> Picture
-fullDisplayPicture playDeck = pictures ([titlePicture] ++ (cardPictures 150 (takeXCards playDeck 3)))
+fullDisplayPicture :: Deck -> Deck -> Picture
+fullDisplayPicture dealerHand playerHand = pictures ([titlePicture, dealerLabel, playerLabel] ++ (cardPictures 120 dealerHand) ++ (cardPictures (-60) playerHand))
 
 
 cardPictures :: Float -> Deck -> [Picture]
@@ -175,6 +178,12 @@ titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5)
                      , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
                      , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
                      ]
+
+dealerLabel :: Picture
+dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+
+playerLabel :: Picture
+playerLabel = color boldColor $ translate (-150) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
 
 darkTeal :: Color
 darkTeal = makeColor 0.0863 0.627 0.522 1
