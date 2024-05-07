@@ -1,6 +1,6 @@
 module ShuffleDeck where
 
-import           CardDeckMAC   (Deck (..))
+import           CardDeckMAC
 import           System.Random
 
 -- Fisher-Yates shuffle algorithm implementation
