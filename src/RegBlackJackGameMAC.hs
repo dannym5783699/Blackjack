@@ -24,6 +24,10 @@ startGameLoopMAC = do
     let discPile = EmptyDeck
     gameLoop player discPile originalDeck
 
+
+
+
+
 gameLoop :: Player -> Deck -> Deck -> IO ()
 gameLoop player discPile playDeck
   | hasRemainingCards playDeck 4 = do
@@ -52,22 +56,30 @@ gameLoop player discPile playDeck
 
     else do
       -- Play out the turn if no immediate blackjacks
-      (playerHand2, discPile2, playDeck2) <- takePlayerTurn playerHand1 discPile1 playDeck1
+      (playerHand2, discPile2, playDeck2) <- handleSplits [playerHand1] discPile1 playDeck1 dealerHand1
       let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
-      printHands dealerHand2 playerHand2 True
+      printMultiHands dealerHand2 playerHand2 True
       -- Determine result from normal play
-      let result = determinResults dealerHand2 playerHand2
-      let updatedPlayer = case result of
-                            PlayerWon -> addWin player -- Update win if player won normally
-                            _ -> player
+      let result = mapResults dealerHand2 playerHand2
+      --let result = determinResults dealerHand2 playerHand2
+      let updatedPlayer = mapPlayerResult player result           
       putStrLn $ show result
       putStrLn $ "Current wins: " ++ show (wins updatedPlayer)
+      printMultiResults dealerHand2 playerHand2
       resetGameLoop updatedPlayer discPile3 playDeck3
 
   | otherwise = do
     putStrLn "There are no cards left in the deck, Thank you for Playing!"
     putStrLn $ "Total wins: " ++ show (wins player)
 
+playerResult :: Player -> Result -> Player
+playerResult player result = case result of
+                            PlayerWon -> addWin player -- Update win if player won normally
+                            _ -> player
+
+mapPlayerResult :: Player -> [Result] -> Player
+mapPlayerResult player [] = player
+mapPlayerResult player (x:xs) = mapPlayerResult (playerResult player x) xs 
 
 -- Deals out the player and dealers hand alternating cards first to player then to the dealer
 dealHand :: Deck -> Deck -> (Deck, Deck, Deck, Deck)
@@ -107,6 +119,52 @@ takePlayerTurn playerHand discPile playDeck
   | otherwise = do
     return (playerHand, discPile, playDeck)
 
+
+
+handleSplits :: [Deck] -> Deck -> Deck -> Deck -> IO ([Deck], Deck, Deck)
+handleSplits playerHands discPile playDeck dealer
+          | hasPlayable playerHands = do
+                 if canSplit playerHands then do
+                     putStrLn "Would you like to split? ('Y' or 'N')"
+                     char <- getChar
+                     _ <- getChar
+                     if char == 'Y' || char == 'y' then do
+                         let pHand = splitDeck playerHands
+                         let (deck1, disc1, play1) = dealCard (head (drop (length pHand - 2) pHand)) discPile playDeck
+                         let (deck2, disc2, play2) = dealCard (head (drop (length pHand - 1) pHand)) disc1 play1
+                         let finalHand = take (length pHand - 2) pHand ++ [deck1] ++ [deck2]
+                         printMultiHands dealer finalHand False
+                         handleSplits finalHand disc2 play2 dealer
+                      else do
+                        handleTurns playerHands [] discPile playDeck
+                  else do
+                    handleTurns playerHands [] discPile playDeck         
+          | otherwise = do
+              return (playerHands, discPile, playDeck)          
+
+
+printMultiHands :: Deck -> [Deck] -> Bool -> IO ()
+printMultiHands _ [] _ = return ()
+printMultiHands dealer (x:xs) b = do 
+                              printHands dealer x b
+                              printMultiHands dealer xs b
+
+
+printMultiResults :: Deck -> [Deck] -> IO ()
+printMultiResults _ [] = return ()
+printMultiResults dealer (x:xs) = do
+                         printResults dealer x
+                         printMultiResults dealer xs
+
+
+handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> IO ([Deck], Deck, Deck)
+handleTurns [] acc disc play = return (acc, disc, play)
+handleTurns (x:xs) acc disc play = do
+                  (player, disc, play) <- takePlayerTurn x disc play
+                  handleTurns xs (acc ++ [player]) disc play 
+
+
+
 -- Prints the hands Dealers first
 printHands :: Deck -> Deck -> Bool-> IO ()
 printHands dealerHand playerHand showDealersFullHand = do
@@ -119,6 +177,26 @@ printHands dealerHand playerHand showDealersFullHand = do
   putStrLn "Players Hand"
   putStrLn (show playerHand)
   putStrLn ""
+
+
+splitDeck :: [Deck] -> [Deck]
+splitDeck decks | length decks == 1 = [Deck [( head (deckToCards(head decks)) )], Deck (tail (deckToCards(head decks)))]
+                | otherwise = (head decks) : splitDeck (tail decks)
+
+
+canSplit :: [Deck] -> Bool
+canSplit decks | length decks < 1 = False
+               | length decks == 1 = canSplitDeck (head decks)
+               | otherwise = canSplit (tail decks)
+
+canSplitDeck :: Deck -> Bool
+canSplitDeck EmptyDeck = False
+canSplitDeck (Deck cards) | length cards == 2 = cardToInt (head cards) == cardToInt (head (tail cards))
+                          | length cards > 2 = cardToInt (head ends) == cardToInt (head (tail ends))
+                          | otherwise = False
+                              where 
+                                ends = drop (length cards - 2 ) cards
+                          
 
 -- Resets the game loop with the discard Pile and the play deck you want
 resetGameLoop :: Player -> Deck -> Deck -> IO ()

@@ -119,6 +119,12 @@ canPlayerPlay hand = go (getHandValue hand)
   where
     go (l,_) = l < 21
 
+hasPlayable :: [Deck] -> Bool
+hasPlayable [] = False
+hasPlayable xs = or (map canPlayerPlay xs)
+
+
+
 -- Determines if the hand equals 21 or BlackJack
 hasBlackJack :: Deck -> Bool
 hasBlackJack hand = go (getHandValue hand)
@@ -145,3 +151,13 @@ determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandVal
       | hd > 21 && ld == lp = Tie ld
       | (ld > 21) || (hp <=21 && hd > 21 && ld < hp) || (hp > 21 && hd > 21 && ld < lp) || (hd <= 21 && hp <= 21 && hd < hp)= PlayerWon
       | otherwise = DealerWon
+
+mapResults :: Deck -> [Deck] -> [Result]
+mapResults _ [] = []
+mapResults dealer (x:xs) = (determinResults dealer x) : (mapResults dealer xs)
+
+
+deckToCards :: Deck -> [Card]
+deckToCards EmptyDeck = []
+deckToCards (Deck as) = as
+
