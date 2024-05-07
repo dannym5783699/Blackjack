@@ -2,16 +2,41 @@ module GUI where
 
 import           CardDeckMAC
 import           Graphics.Gloss
+import           Graphics.Gloss.Interface.IO.Interact
 import           RegBlackJackGameMAC
 import           ShuffleDeck
+import qualified System.Exit                          as Exit
 
+
+data World = World {playerHand   :: Deck
+                    , dealerHand :: Deck
+                    , discPile   :: Deck
+                    , playDeck   :: Deck
+                    }
+
+setWorld :: World -> Picture
+setWorld (World playerHand dealerHand _ _) = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton] ++ (cardPictures 120 dealerHand) ++ (cardPictures (-60) playerHand))
+
+handleEvent :: Event -> World -> World
+handleEvent (EventKey (MouseButton LeftButton) _ _ (x,y)) (World playerHand dealerHand discPile playDeck)
+  | x >= 100 && x <= 300 && y >= 0 && y <= 50 = World playerHandNew dealerHandNew discPileNew playDeckNew
+  | otherwise = World playerHand dealerHand discPile playDeck
+    where
+      (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand playDeck discPile
+handleEvent _ world = world
+
+nextEvent :: Float -> World -> World
+nextEvent _ world = world
 
 startGUI :: IO ()
 startGUI = do
-  shuffledDeck <- shuffleDeck createDeck
+  initialDeck <- (shuffleDeck createDeck)
+  let shuffledDeck = initialDeck
   let (playerHand, dealerHand, discPile, playDeck) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
+  let startWorld = World dealerHand playerHand discPile playDeck
+  play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
+  --display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
 fullDisplayPicture :: Deck -> Deck -> Picture
 fullDisplayPicture dealerHand playerHand = pictures ([titlePicture, dealerLabel, playerLabel] ++ (cardPictures 120 dealerHand) ++ (cardPictures (-60) playerHand))
@@ -178,6 +203,10 @@ titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5)
                      , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
                      , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
                      ]
+
+nextCardButton :: Picture
+nextCardButton = pictures [color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
+                            , color darkColor $ translate (100) (5) $ scale (0.25) (0.25) $ text "Next Card"]
 
 dealerLabel :: Picture
 dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
