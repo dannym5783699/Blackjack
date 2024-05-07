@@ -146,3 +146,88 @@ Would you like to play again? ('Y' or 'N')
 n
 "Thank you for Playing!"
 ```
+
+- The game tracks wins for the player
+```txt 
+Enter number of decks [1-6]
+5
+Enter your name:
+Alex
+
+Dealers Hand
+[♦6] [*]
+Players Hand
+[♥Q] [♣9] 
+
+Would you like a card? ('Y' or 'N')
+n
+
+Dealers Hand
+[♦6] [♠9] [♦3] 
+Players Hand
+[♥Q] [♣9] 
+
+You WON!
+Current wins: 1
+Would you like to play again? ('Y' or 'N')
+y
+
+Dealers Hand
+[♣A] [*]
+Players Hand
+[♠8] [♠Q] 
+
+Would you like a card? ('Y' or 'N')
+n
+
+Dealers Hand
+[♣A] [♦2] [♥8] 
+Players Hand
+[♠8] [♠Q] 
+
+The Dealer Wins
+Current wins: 1
+Would you like to play again? ('Y' or 'N')
+y
+
+Dealers Hand
+[♥8] [*]
+Players Hand
+[♥10] [♦K] 
+
+Would you like a card? ('Y' or 'N')
+n
+
+Dealers Hand
+[♥8] [♣K] 
+Players Hand
+[♥10] [♦K] 
+
+You WON!
+Current wins: 2
+Would you like to play again? ('Y' or 'N')
+y
+
+Dealers Hand
+[♣Q] [*]
+Players Hand
+[♦5] [♠9] 
+
+Would you like a card? ('Y' or 'N')
+y
+
+Your New Hand
+[♦5] [♠9] [♦K] 
+
+
+Dealers Hand
+[♣Q] [♥10] 
+Players Hand
+[♦5] [♠9] [♦K] 
+
+The Dealer Wins
+Current wins: 2
+Would you like to play again? ('Y' or 'N')
+n
+Total wins: 2
+Thank you for Playing!
