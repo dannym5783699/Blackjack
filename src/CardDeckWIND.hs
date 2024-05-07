@@ -15,11 +15,6 @@ instance Show Suit where
   show Spade   = "\x0006"
   show Club    = "\x0005"
 
-<<<<<<< HEAD
-data Hands = Hand Deck | Hands Deck Hands
-
-=======
->>>>>>> main
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
   deriving(Eq, Ord, Enum)
 
@@ -125,15 +120,12 @@ canPlayerPlay hand = go (getHandValue hand)
   where
     go (l,_) = l < 21
 
-<<<<<<< HEAD
 hasPlayable :: [Deck] -> Bool
 hasPlayable [] = False
 hasPlayable xs = or (map canPlayerPlay xs)
 
 
 
-=======
->>>>>>> main
 -- Determines if the hand equals 21 or BlackJack
 hasBlackJack :: Deck -> Bool
 hasBlackJack hand = go (getHandValue hand)
@@ -160,7 +152,6 @@ determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandVal
       | hd > 21 && ld == lp = Tie ld
       | (ld > 21) || (hp <=21 && hd > 21 && ld < hp) || (hp > 21 && hd > 21 && ld < lp) || (hd <= 21 && hp <= 21 && hd < hp)= PlayerWon
       | otherwise = DealerWon
-<<<<<<< HEAD
 
 
 
@@ -168,5 +159,3 @@ deckToCards :: Deck -> [Card]
 deckToCards EmptyDeck = []
 deckToCards (Deck as) = as
 
-=======
->>>>>>> main

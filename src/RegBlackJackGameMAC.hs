@@ -99,6 +99,14 @@ takePlayerTurn playerHand discPile playDeck
     return (playerHand, discPile, playDeck)
 
 
+
+handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> IO ([Deck], Deck, Deck)
+handleTurns [] acc disc play = return (acc, disc, play)
+handleTurns (x:xs) acc disc play = do
+                  (player, disc, play) <- takePlayerTurn x disc play
+                  handleTurns xs (player : acc) disc play 
+
+
 -- Prints the hands Dealers first
 printHands :: Deck -> Deck -> Bool-> IO ()
 printHands dealerHand playerHand showDealersFullHand = do
