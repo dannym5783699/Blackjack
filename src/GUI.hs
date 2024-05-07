@@ -5,7 +5,6 @@ import           Graphics.Gloss
 import           Graphics.Gloss.Interface.IO.Interact
 import           RegBlackJackGameMAC
 import           ShuffleDeck
-import qualified System.Exit                          as Exit
 
 
 data World = World {playerHand   :: Deck
