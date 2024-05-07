@@ -13,10 +13,13 @@ data World = World {playerHand      :: Deck
                     , playDeck      :: Deck
                     , playerTurn    :: Bool
                     , resultMessage :: String
+                    , numOfDecks    :: Int
+                    , deckSelection :: Bool
                     }
 
 setWorld :: World -> Picture
 setWorld world
+  | deckSelection world = pictures [titlePicture, numDecksLabel]
   | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
                                 ++ (cardPictures 120 (dealerHand world))
                                 ++ (cardPictures (-60) (playerHand world)))
@@ -79,7 +82,7 @@ startGUI = do
   let shuffledDeck = initialDeck
   let (playerHandInit, dealerHandInit, discPileInit, playDeckInit) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  let startWorld = World playerHandInit dealerHandInit discPileInit playDeckInit True ""
+  let startWorld = World EmptyDeck EmptyDeck EmptyDeck playDeckInit True "" 0 True
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
   --display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
@@ -264,6 +267,9 @@ hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),
 stayButton :: Picture
 stayButton = pictures [color boldColor $ polygon [(100,-50),(300,-50),(300,-100),(100,-100)]
                       , color darkColor $ translate (170) (-85) $ scale (0.25) (0.25) $ text "Stay"]
+
+numDecksLabel :: Picture
+numDecksLabel = color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
 
 resultsPanel :: String -> Picture
 resultsPanel resultM = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
