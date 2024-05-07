@@ -24,13 +24,34 @@ setWorld world
                           ++ (cardPictures (-60) (playerHand world)))
 
 handleEvent :: Event -> World -> World
-handleEvent (EventKey (MouseButton LeftButton) _ _ (x,y)) world
+handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
   | not (playerTurn world) =
     if (x >= 100 && x <= 300 && y >= 0 && y <= 50) then do
       getNextHand world
     else world
-  | otherwise = world
+  | otherwise =
+    if (x >= 100 && x <= 300 && y >= 50 && y <= 100) then hitPlayer world
+    else if (x >= 100 && x <= 300 && y >= (-100) && y <= (-50)) then showResults world
+    else world
 handleEvent _ world = world
+
+hitPlayer :: World -> World
+hitPlayer world =
+  if (canPlayerPlay (playerHand world)) then world {playerHand = playerHNew
+                                                    , discPile = discPNew
+                                                    , playDeck = playDNew}
+  else world {playerTurn = False}
+    where
+      (playerHNew, discPNew, playDNew) = dealCard (playerHand world) (discPile world) (playDeck world)
+
+showResults :: World -> World
+showResults world = world {dealerHand = dealerHandNew
+                          , discPile = discPileNew
+                          , playDeck = playDeckNew
+                          , playerTurn = False}
+  where
+    (dealerHandNew, discPileNew, playDeckNew) = takeDealerTurn (dealerHand world) (discPile world) (playDeck world)
+
 
 getNextHand :: World -> World
 getNextHand world = (world {playerHand = playerHandNew
