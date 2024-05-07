@@ -3,62 +3,78 @@ module RegBlackJackGameMAC where
 import           CardDeckMAC
 import           Data.Char
 
+import           PlayerData 
+
 import ShuffleDeck 
 
 startGameLoopMAC :: IO ()
 startGameLoopMAC = do
   putStrLn "Enter number of decks [1-6]"
   char <- getChar
-  if (isDigit char && char > '0' && char < '7') then do
-    _ <- getChar  -- consume the newline after input
+  _ <- getChar  -- consume the newline after input
+  player <- createPlayer  -- Create a new player at the start of the game
+  if isDigit char && char > '0' && char < '7' then do
     let num = digitToInt char
     playDeck <- shuffleDeck (createVarDeck num)  -- shuffle after creating the variable deck
     let discPile = EmptyDeck
-    gameLoop discPile playDeck
+    gameLoop player discPile playDeck
   else do
     putStrLn "Invalid input, defaulting to standard deck."
-    originalDeck <- shuffleDeck createDeck  -- correct usage here
+    originalDeck <- shuffleDeck createDeck
     let discPile = EmptyDeck
-    gameLoop discPile originalDeck
+    gameLoop player discPile originalDeck
 
 
 
 
 
-
--- The main loop for the game that starts that plays each rounc
-gameLoop :: Deck -> Deck -> IO ()
-gameLoop discPile playDeck
-  | hasRemaingingCards playDeck 4 = do
+gameLoop :: Player -> Deck -> Deck -> IO ()
+gameLoop player discPile playDeck
+  | hasRemainingCards playDeck 4 = do
     let (playerHand1, dealerHand1, discPile1, playDeck1) = dealHand playDeck discPile
     printHands dealerHand1 playerHand1 False
 
+    -- Check for blackjack conditions first
     if ((hasBlackJack playerHand1) && (hasBlackJack dealerHand1)) then do
       putStrLn "You both have BlackJack it is a Tie"
       printHands dealerHand1 playerHand1 True
       printResults dealerHand1 playerHand1
-      resetGameLoop discPile1 playDeck1
+      resetGameLoop player discPile1 playDeck1
 
     else if hasBlackJack playerHand1 then do
       putStrLn "You have BLACKJACK!!"
       printHands dealerHand1 playerHand1 True
       printResults dealerHand1 playerHand1
-      resetGameLoop discPile1 playDeck1
+      let updatedPlayer = addWin player -- Player wins if they have blackjack
+      resetGameLoop updatedPlayer discPile1 playDeck1
 
     else if hasBlackJack dealerHand1 then do
-      putStrLn "Dealer has Blackjack, you loose"
+      putStrLn "Dealer has Blackjack, you lose"
       printHands dealerHand1 playerHand1 True
       printResults dealerHand1 playerHand1
-      resetGameLoop discPile1 playDeck1
+      resetGameLoop player discPile1 playDeck1
 
     else do
+      -- Play out the turn if no immediate blackjacks
       (playerHand2, discPile2, playDeck2) <- handleSplits [playerHand1] discPile1 playDeck1 dealerHand1
       let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
+      printMultiHands dealerHand2 playerHand2 True
+      -- Determine result from normal play
+      let result = determinResults dealerHand2 playerHand2
+      let updatedPlayer = case result of
+                            PlayerWon -> addWin player -- Update win if player won normally
+                            _ -> player
+      putStrLn $ show result
+      putStrLn $ "Current wins: " ++ show (wins updatedPlayer)
+      resetGameLoop updatedPlayer discPile3 playDeck3
       printMultiHands dealerHand2 playerHand2 True
       printMultiResults dealerHand2 playerHand2
       resetGameLoop discPile3 playDeck3
 
-  | otherwise = print "There are no cards left in the deck, Thank you for Playing!"
+  | otherwise = do
+    putStrLn "There are no cards left in the deck, Thank you for Playing!"
+    putStrLn $ "Total wins: " ++ show (wins player)
+
 
 -- Deals out the player and dealers hand alternating cards first to player then to the dealer
 dealHand :: Deck -> Deck -> (Deck, Deck, Deck, Deck)
@@ -178,15 +194,16 @@ canSplitDeck (Deck cards) | length cards == 2 = cardToInt (head cards) == cardTo
                           
 
 -- Resets the game loop with the discard Pile and the play deck you want
-resetGameLoop :: Deck -> Deck -> IO ()
-resetGameLoop discPile playDeck = do
+resetGameLoop :: Player -> Deck -> Deck -> IO ()
+resetGameLoop player discPile playDeck = do
   putStrLn "Would you like to play again? ('Y' or 'N')"
   char <- getChar
-  if char == 'Y' || char == 'y'
-  then do
-    _ <- getChar
-    gameLoop discPile playDeck
-  else print "Thank you for Playing!"
+  if char == 'Y' || char == 'y' then do
+    _ <- getChar  -- consume the newline
+    gameLoop player discPile playDeck
+  else do
+    putStrLn $ "Total wins: " ++ show (wins player)
+    putStrLn "Thank you for Playing!"
 
 -- Prints the results in a readable format to the user
 printResults :: Deck -> Deck -> IO ()
@@ -194,3 +211,4 @@ printResults dealerHand playerHand = do
   putStrLn ""
   putStrLn (show (determinResults dealerHand playerHand))
   putStrLn ""
+
