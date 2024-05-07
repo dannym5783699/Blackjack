@@ -144,7 +144,7 @@ handleSplits playerHands discPile playDeck dealer
 
 
 printMultiHands :: Deck -> [Deck] -> Bool -> IO ()
-printMultiHands dealer [] _ = return ()
+printMultiHands _ [] _ = return ()
 printMultiHands dealer (x:xs) b = do 
                               printHands dealer x b
                               printMultiHands dealer xs b
@@ -180,7 +180,7 @@ printHands dealerHand playerHand showDealersFullHand = do
 
 
 splitDeck :: [Deck] -> [Deck]
-splitDeck decks | length decks == 1 = [Deck (deckToCards(head decks)), Deck (deckToCards(head (tail decks)))]
+splitDeck decks | length decks == 1 = [Deck [( head (deckToCards(head decks)) )], Deck (tail (deckToCards(head decks)))]
                 | otherwise = (head decks) : splitDeck (tail decks)
 
 
