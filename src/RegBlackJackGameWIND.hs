@@ -1,12 +1,28 @@
-module RegBlackJackGame where
+module RegBlackJackGameWIND where
 
-import           CardDeck
+import           CardDeckWIND
+import           Data.Char
 
-startGameLoop :: IO ()
-startGameLoop = do
-  let playDeck = createDeck
-  let discPile = EmptyDeck
-  gameLoop discPile playDeck
+import           ShuffleDeckWIND   -- Import the WIND-specific shuffle function
+
+
+startGameLoopWIND :: IO ()
+startGameLoopWIND = do
+  putStrLn "Enter number of decks [1-6]"
+  char <- getChar
+  if isDigit char && char > '0' && char < '7' then do
+    _ <- getChar  -- consume the newline after input
+    let num = digitToInt char
+    playDeck <- shuffleDeckWIND (createVarDeck num)  -- shuffle after creating the variable deck
+    let discPile = EmptyDeck
+    gameLoop discPile playDeck
+  else do
+    _ <- getChar  -- consume the newline after input
+    putStrLn "Invalid input, defaulting to standard deck."
+    playDeck <- shuffleDeckWIND createDeck  -- Use the shuffle function
+    let discPile = EmptyDeck
+    gameLoop discPile playDeck
+
 
 -- The main loop for the game that starts that plays each rounc
 gameLoop :: Deck -> Deck -> IO ()
@@ -92,6 +108,25 @@ printHands dealerHand playerHand showDealersFullHand = do
   putStrLn "Players Hand"
   putStrLn (show playerHand)
   putStrLn ""
+
+--Assumes two cards in deck, does not work if deck is empty.
+splitDeck :: [Deck] -> [Deck]
+splitDeck decks | length decks == 1 = [Deck (deckToCards(head decks)), Deck (deckToCards(head (tail decks)))]
+                | otherwise = (head decks) : splitDeck (tail decks)
+
+canSplit :: [Deck] -> Bool
+canSplit decks | length decks < 1 = False
+               | length decks == 1 = canSplitDeck (head decks)
+               | otherwise = canSplit (tail decks)
+
+canSplitDeck :: Deck -> Bool
+canSplitDeck EmptyDeck = False
+canSplitDeck (Deck cards) | length cards == 2 = cardToInt (head cards) == cardToInt (head (tail cards))
+                          | length cards > 2 = cardToInt (head ends) == cardToInt (head (tail ends))
+                          | otherwise = False
+                              where 
+                                ends = drop (length cards - 2 ) cards
+                          
 
 -- Resets the game loop with the discard Pile and the play deck you want
 resetGameLoop :: Deck -> Deck -> IO ()
