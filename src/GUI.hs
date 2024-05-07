@@ -11,18 +11,57 @@ data World = World {playerHand   :: Deck
                     , dealerHand :: Deck
                     , discPile   :: Deck
                     , playDeck   :: Deck
+                    , playerTurn :: Bool
                     }
 
 setWorld :: World -> Picture
-setWorld (World playerHand dealerHand _ _) = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton] ++ (cardPictures 120 dealerHand) ++ (cardPictures (-60) playerHand))
+setWorld world
+  | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
+                          ++ (cardPictures 120 (dealerHand world))
+                          ++ (cardPictures (-60) (playerHand world)))
+  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton]
+                          ++ (cardPictures 120 (dealerHand world))
+                          ++ (cardPictures (-60) (playerHand world)))
 
 handleEvent :: Event -> World -> World
-handleEvent (EventKey (MouseButton LeftButton) _ _ (x,y)) (World playerHand dealerHand discPile playDeck)
-  | x >= 100 && x <= 300 && y >= 0 && y <= 50 = World playerHandNew dealerHandNew discPileNew playDeckNew
-  | otherwise = World playerHand dealerHand discPile playDeck
-    where
-      (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand playDeck discPile
+handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
+  | not (playerTurn world) =
+    if (x >= 100 && x <= 300 && y >= 0 && y <= 50) then do
+      getNextHand world
+    else world
+  | otherwise =
+    if (x >= 100 && x <= 300 && y >= 50 && y <= 100) then hitPlayer world
+    else if (x >= 100 && x <= 300 && y >= (-100) && y <= (-50)) then showResults world
+    else world
 handleEvent _ world = world
+
+hitPlayer :: World -> World
+hitPlayer world =
+  if (canPlayerPlay (playerHand world)) then world {playerHand = playerHNew
+                                                    , discPile = discPNew
+                                                    , playDeck = playDNew}
+  else world {playerTurn = False}
+    where
+      (playerHNew, discPNew, playDNew) = dealCard (playerHand world) (discPile world) (playDeck world)
+
+showResults :: World -> World
+showResults world = world {dealerHand = dealerHandNew
+                          , discPile = discPileNew
+                          , playDeck = playDeckNew
+                          , playerTurn = False}
+  where
+    (dealerHandNew, discPileNew, playDeckNew) = takeDealerTurn (dealerHand world) (discPile world) (playDeck world)
+
+
+getNextHand :: World -> World
+getNextHand world = (world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = True})
+  where
+    (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand (playDeck world) (discPile world)
+
 
 nextEvent :: Float -> World -> World
 nextEvent _ world = world
@@ -31,14 +70,16 @@ startGUI :: IO ()
 startGUI = do
   initialDeck <- (shuffleDeck createDeck)
   let shuffledDeck = initialDeck
-  let (playerHand, dealerHand, discPile, playDeck) = dealHand shuffledDeck EmptyDeck
+  let (playerHandInit, dealerHandInit, discPileInit, playDeckInit) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  let startWorld = World dealerHand playerHand discPile playDeck
+  let startWorld = World playerHandInit dealerHandInit discPileInit playDeckInit True
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
   --display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
 fullDisplayPicture :: Deck -> Deck -> Picture
-fullDisplayPicture dealerHand playerHand = pictures ([titlePicture, dealerLabel, playerLabel] ++ (cardPictures 120 dealerHand) ++ (cardPictures (-60) playerHand))
+fullDisplayPicture dHand pHand = pictures ([titlePicture, dealerLabel, playerLabel]
+                                          ++ (cardPictures 120 dHand)
+                                          ++ (cardPictures (-60) pHand))
 
 
 cardPictures :: Float -> Deck -> [Picture]
@@ -59,51 +100,51 @@ getMinWidth numCards = (-80) + getMinWidth (numCards - 1)
 
 
 diamondCardPicture :: Float -> Float -> Card -> Picture
-diamondCardPicture maxHeight minWidth (Card _ r)= pictures [color cardColor $ polygon [(minWidth,maxHeight)
-                                                                                      ,((minWidth + 70),maxHeight)
-                                                                                      ,((minWidth + 70),(maxHeight - 100))
-                                                                                      ,(minWidth,(maxHeight - 100))
+diamondCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+                                                                                      ,((minW + 70),maxH)
+                                                                                      ,((minW + 70),(maxH - 100))
+                                                                                      ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , diamondPicture maxHeight (minWidth)
-                                                            , boldRankPicture boldColor maxHeight minWidth (show r)
-                                                            , diamondPicture (maxHeight - 80) (minWidth + 54)
-                                                            , boldRankPicture boldColor (maxHeight - 80) (minWidth + 26) (show r)
+                                                            , diamondPicture maxH (minW)
+                                                            , boldRankPicture boldColor maxH minW (show r)
+                                                            , diamondPicture (maxH - 80) (minW + 54)
+                                                            , boldRankPicture boldColor (maxH - 80) (minW + 26) (show r)
                                                             ]
 
 heartCardPicture :: Float -> Float -> Card -> Picture
-heartCardPicture maxHeight minWidth (Card _ r)= pictures [color cardColor $ polygon [(minWidth,maxHeight)
-                                                                                      ,((minWidth + 70),maxHeight)
-                                                                                      ,((minWidth + 70),(maxHeight - 100))
-                                                                                      ,(minWidth,(maxHeight - 100))
+heartCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+                                                                                      ,((minW + 70),maxH)
+                                                                                      ,((minW + 70),(maxH - 100))
+                                                                                      ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , heartPicture maxHeight (minWidth)
-                                                            , boldRankPicture boldColor maxHeight minWidth (show r)
-                                                            , heartPicture (maxHeight - 80) (minWidth + 54)
-                                                            , boldRankPicture boldColor (maxHeight - 80) (minWidth + 26) (show r)
+                                                            , heartPicture maxH (minW)
+                                                            , boldRankPicture boldColor maxH minW (show r)
+                                                            , heartPicture (maxH - 80) (minW + 54)
+                                                            , boldRankPicture boldColor (maxH - 80) (minW + 26) (show r)
                                                             ]
 
 spadeCardPicture :: Float -> Float -> Card -> Picture
-spadeCardPicture maxHeight minWidth (Card _ r)= pictures [color cardColor $ polygon [(minWidth,maxHeight)
-                                                                                      ,((minWidth + 70),maxHeight)
-                                                                                      ,((minWidth + 70),(maxHeight - 100))
-                                                                                      ,(minWidth,(maxHeight - 100))
+spadeCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+                                                                                      ,((minW + 70),maxH)
+                                                                                      ,((minW + 70),(maxH - 100))
+                                                                                      ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , spadePicture maxHeight (minWidth)
-                                                            , boldRankPicture darkColor maxHeight minWidth (show r)
-                                                            , spadePicture (maxHeight - 80) (minWidth + 54)
-                                                            , boldRankPicture darkColor (maxHeight - 80) (minWidth + 26) (show r)
+                                                            , spadePicture maxH (minW)
+                                                            , boldRankPicture darkColor maxH minW (show r)
+                                                            , spadePicture (maxH - 80) (minW + 54)
+                                                            , boldRankPicture darkColor (maxH - 80) (minW + 26) (show r)
                                                             ]
 
 clubCardPicture :: Float -> Float -> Card -> Picture
-clubCardPicture maxHeight minWidth (Card _ r)= pictures [color cardColor $ polygon [(minWidth,maxHeight)
-                                                                                      ,((minWidth + 70),maxHeight)
-                                                                                      ,((minWidth + 70),(maxHeight - 100))
-                                                                                      ,(minWidth,(maxHeight - 100))
+clubCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+                                                                                      ,((minW + 70),maxH)
+                                                                                      ,((minW + 70),(maxH - 100))
+                                                                                      ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , clubPicture maxHeight (minWidth)
-                                                            , boldRankPicture darkColor maxHeight minWidth (show r)
-                                                            , clubPicture (maxHeight - 80) (minWidth + 54)
-                                                            , boldRankPicture darkColor (maxHeight - 80) (minWidth + 26) (show r)
+                                                            , clubPicture maxH (minW)
+                                                            , boldRankPicture darkColor maxH minW (show r)
+                                                            , clubPicture (maxH - 80) (minW + 54)
+                                                            , boldRankPicture darkColor (maxH - 80) (minW + 26) (show r)
                                                             ]
 
 
@@ -191,7 +232,9 @@ clubPicture maxHeight minWidth = color darkColor $ polygon [((minWidth + 9),(max
                                                             ]
 
 boldRankPicture :: Color -> Float -> Float -> String -> Picture
-boldRankPicture itemColor maxHeight minWidth rank = color itemColor $ translate (minWidth + 16) (maxHeight - 18) $ scale (0.15) (0.15) $ text rank
+boldRankPicture itemC maxH minW rank
+  | rank == "10" = color itemC $ translate (minW + 22) (maxH - 18) $ scale (0.15) (0.15) $ text rank
+  | otherwise = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
 
 -- Picture Representation of banner "BLACKJACK"
 titlePicture :: Picture
@@ -206,6 +249,14 @@ titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5)
 nextCardButton :: Picture
 nextCardButton = pictures [color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
                             , color darkColor $ translate (100) (5) $ scale (0.25) (0.25) $ text "Next Card"]
+
+hitMeButton :: Picture
+hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
+                        , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"]
+
+stayButton :: Picture
+stayButton = pictures [color boldColor $ polygon [(100,-50),(300,-50),(300,-100),(100,-100)]
+                      , color darkColor $ translate (170) (-85) $ scale (0.25) (0.25) $ text "Stay"]
 
 dealerLabel :: Picture
 dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
