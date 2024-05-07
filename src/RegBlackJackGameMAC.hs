@@ -26,6 +26,9 @@ startGameLoopMAC = do
 
 
 
+safeHead :: a -> [a] -> a
+safeHead def [] = def
+safeHead _ (x:_) = x
 
 
 gameLoop :: Player -> Deck -> Deck -> IO ()
@@ -130,8 +133,8 @@ handleSplits playerHands discPile playDeck dealer
                      _ <- getChar
                      if char == 'Y' || char == 'y' then do
                          let pHand = splitDeck playerHands
-                         let (deck1, disc1, play1) = dealCard (head (drop (length pHand - 2) pHand)) discPile playDeck
-                         let (deck2, disc2, play2) = dealCard (head (drop (length pHand - 1) pHand)) disc1 play1
+                         let (deck1, disc1, play1) = dealCard (safeHead EmptyDeck (drop (length pHand - 2) pHand)) discPile playDeck
+                         let (deck2, disc2, play2) = dealCard (safeHead EmptyDeck (drop (length pHand - 1) pHand)) disc1 play1
                          let finalHand = take (length pHand - 2) pHand ++ [deck1] ++ [deck2]
                          printMultiHands dealer finalHand False
                          handleSplits finalHand disc2 play2 dealer
@@ -160,8 +163,8 @@ printMultiResults dealer (x:xs) = do
 handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> IO ([Deck], Deck, Deck)
 handleTurns [] acc disc play = return (acc, disc, play)
 handleTurns (x:xs) acc disc play = do
-                  (player, disc, play) <- takePlayerTurn x disc play
-                  handleTurns xs (acc ++ [player]) disc play 
+                  (player, disc1, play1) <- takePlayerTurn x disc play
+                  handleTurns xs (acc ++ [player]) disc1 play1
 
 
 
@@ -180,19 +183,19 @@ printHands dealerHand playerHand showDealersFullHand = do
 
 
 splitDeck :: [Deck] -> [Deck]
-splitDeck decks | length decks == 1 = [Deck [( head (deckToCards(head decks)) )], Deck (tail (deckToCards(head decks)))]
-                | otherwise = (head decks) : splitDeck (tail decks)
+splitDeck decks | length decks == 1 = [Deck [( safeHead (Card Heart Error) (deckToCards(safeHead EmptyDeck decks)) )], Deck (drop 1 (deckToCards(safeHead EmptyDeck decks)))]
+                | otherwise = (safeHead EmptyDeck decks) : splitDeck (drop 1 decks)
 
 
 canSplit :: [Deck] -> Bool
 canSplit decks | length decks < 1 = False
-               | length decks == 1 = canSplitDeck (head decks)
-               | otherwise = canSplit (tail decks)
+               | length decks == 1 = canSplitDeck (safeHead EmptyDeck decks)
+               | otherwise = canSplit (drop 1 decks)
 
 canSplitDeck :: Deck -> Bool
 canSplitDeck EmptyDeck = False
-canSplitDeck (Deck cards) | length cards == 2 = cardToInt (head cards) == cardToInt (head (tail cards))
-                          | length cards > 2 = cardToInt (head ends) == cardToInt (head (tail ends))
+canSplitDeck (Deck cards) | length cards == 2 = cardToInt (safeHead (Card Heart Error) cards) == cardToInt (safeHead (Card Heart Error) (drop 1 cards))
+                          | length cards > 2 = cardToInt (safeHead (Card Heart Error) ends) == cardToInt (safeHead (Card Heart Error) (drop 1 ends))
                           | otherwise = False
                               where 
                                 ends = drop (length cards - 2 ) cards
