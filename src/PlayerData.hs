@@ -4,6 +4,7 @@ module PlayerData
   , addWin
   ) where
 
+
 -- Definition of the Player data type
 data Player = Player {
     playerName :: String,  -- Stores the player's name
@@ -20,3 +21,4 @@ createPlayer = do
 -- Function to increment the win count of a player
 addWin :: Player -> Player
 addWin player = player { wins = wins player + 1 }
+

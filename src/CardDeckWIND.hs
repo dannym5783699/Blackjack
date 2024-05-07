@@ -152,6 +152,9 @@ determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandVal
       | (ld > 21) || (hp <=21 && hd > 21 && ld < hp) || (hp > 21 && hd > 21 && ld < lp) || (hd <= 21 && hp <= 21 && hd < hp)= PlayerWon
       | otherwise = DealerWon
 
+mapResults :: Deck -> [Deck] -> [Result]
+mapResults _ [] = []
+mapResults dealer (x:xs) = (determinResults dealer x) : (mapResults dealer xs)
 
 
 deckToCards :: Deck -> [Card]

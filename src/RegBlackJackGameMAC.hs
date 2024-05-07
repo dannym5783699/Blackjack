@@ -60,21 +60,26 @@ gameLoop player discPile playDeck
       let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
       printMultiHands dealerHand2 playerHand2 True
       -- Determine result from normal play
-      let result = determinResults dealerHand2 playerHand2
-      let updatedPlayer = case result of
-                            PlayerWon -> addWin player -- Update win if player won normally
-                            _ -> player
+      let result = mapResults dealerHand2 playerHand2
+      --let result = determinResults dealerHand2 playerHand2
+      let updatedPlayer = mapPlayerResult player result           
       putStrLn $ show result
       putStrLn $ "Current wins: " ++ show (wins updatedPlayer)
-      resetGameLoop updatedPlayer discPile3 playDeck3
-      printMultiHands dealerHand2 playerHand2 True
       printMultiResults dealerHand2 playerHand2
-      resetGameLoop discPile3 playDeck3
+      resetGameLoop updatedPlayer discPile3 playDeck3
 
   | otherwise = do
     putStrLn "There are no cards left in the deck, Thank you for Playing!"
     putStrLn $ "Total wins: " ++ show (wins player)
 
+playerResult :: Player -> Result -> Player
+playerResult player result = case result of
+                            PlayerWon -> addWin player -- Update win if player won normally
+                            _ -> player
+
+mapPlayerResult :: Player -> [Result] -> Player
+mapPlayerResult player [] = player
+mapPlayerResult player (x:xs) = mapPlayerResult (playerResult player x) xs 
 
 -- Deals out the player and dealers hand alternating cards first to player then to the dealer
 dealHand :: Deck -> Deck -> (Deck, Deck, Deck, Deck)
