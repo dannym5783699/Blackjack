@@ -6,6 +6,10 @@ import           Data.Char
 import           ShuffleDeckWIND   -- Import the WIND-specific shuffle function
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 startGameLoopWIND :: IO ()
 startGameLoopWIND = do
   putStrLn "Enter number of decks [1-6]"
@@ -109,6 +113,7 @@ printHands dealerHand playerHand showDealersFullHand = do
   putStrLn (show playerHand)
   putStrLn ""
 
+<<<<<<< HEAD
 --Assumes two cards in deck, does not work if deck is empty.
 splitDeck :: [Deck] -> [Deck]
 splitDeck decks | length decks == 1 = [Deck (deckToCards(head decks)), Deck (deckToCards(head (tail decks)))]
@@ -128,6 +133,8 @@ canSplitDeck (Deck cards) | length cards == 2 = cardToInt (head cards) == cardTo
                                 ends = drop (length cards - 2 ) cards
                           
 
+=======
+>>>>>>> main
 -- Resets the game loop with the discard Pile and the play deck you want
 resetGameLoop :: Deck -> Deck -> IO ()
 resetGameLoop discPile playDeck = do

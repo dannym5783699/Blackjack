@@ -1,12 +1,26 @@
-module RegBlackJackGame where
+module RegBlackJackGameMAC where
 
-import           CardDeck
+import           CardDeckMAC
+import           Data.Char
 
-startGameLoop :: IO ()
-startGameLoop = do
-  let playDeck = createDeck
-  let discPile = EmptyDeck
-  gameLoop discPile playDeck
+import ShuffleDeck 
+
+startGameLoopMAC :: IO ()
+startGameLoopMAC = do
+  putStrLn "Enter number of decks [1-6]"
+  char <- getChar
+  if (isDigit char && char > '0' && char < '7') then do
+    _ <- getChar  -- consume the newline after input
+    let num = digitToInt char
+    playDeck <- shuffleDeck (createVarDeck num)  -- shuffle after creating the variable deck
+    let discPile = EmptyDeck
+    gameLoop discPile playDeck
+  else do
+    putStrLn "Invalid input, defaulting to standard deck."
+    originalDeck <- shuffleDeck createDeck  -- correct usage here
+    let discPile = EmptyDeck
+    gameLoop discPile originalDeck
+
 
 
 

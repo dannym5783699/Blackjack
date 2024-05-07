@@ -59,7 +59,7 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  CardDeck, RegBlackJackGame
+    exposed-modules:  CardDeckMAC, RegBlackJackGameMAC, CardDeckWIND, RegBlackJackGameWIND, ShuffleDeck, ShuffleDeckWIND, GUI
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -69,7 +69,8 @@ library
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.19.1.0,
-                      random
+                      random,
+                      gloss
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -94,7 +95,7 @@ executable haskell-final
     build-depends:
         base ^>=4.19.1.0,
         haskell-final,
-        brick
+        gloss
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -122,7 +123,7 @@ test-suite haskell-final-test
     hs-source-dirs:   test
 
     -- The entrypoint to the test suite.
-    main-is:          Main.hs
+    main-is:          Test.hs
 
     -- Test dependencies.
     build-depends:

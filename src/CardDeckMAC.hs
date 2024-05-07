@@ -1,4 +1,4 @@
-module CardDeck where
+module CardDeckMAC where
 import           System.Random
 
 printRNDNum :: IO ()
@@ -55,6 +55,16 @@ instance Show Deck where
 createDeck :: Deck
 createDeck = Deck [Card suit rank | suit <- [Diamond .. Club], rank <- [Two .. Ace]]
 
+createVarDeck :: Int -> Deck
+createVarDeck 1 = createDeck
+createVarDeck n = addDecks createDeck (createVarDeck (n-1))
+
+
+addDecks :: Deck -> Deck -> Deck
+addDecks EmptyDeck n       = n
+addDecks n EmptyDeck       = n
+addDecks (Deck n) (Deck c) = Deck (n ++ c)
+
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:_)) = card
 
@@ -65,6 +75,8 @@ hasRemaingingCards (Deck cards) n
   | otherwise = True
 
 takeXCards :: Deck -> Int -> Deck
+takeXCards EmptyDeck _    = EmptyDeck
+takeXCards (Deck []) _    = EmptyDeck
 takeXCards (Deck cards) n = Deck (take n cards)
 
 addToRemovedDeck :: Deck -> Deck -> Deck
