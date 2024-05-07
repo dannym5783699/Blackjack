@@ -4,7 +4,6 @@ import           CardDeckWIND
 import           Data.Char
 
 import           ShuffleDeckWIND   -- Import the WIND-specific shuffle function
-import GHC.Num.BigNat (bigNatCompare)
 
 
 startGameLoopWIND :: IO ()
