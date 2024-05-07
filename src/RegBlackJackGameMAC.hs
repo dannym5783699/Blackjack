@@ -143,6 +143,7 @@ handleTurns (x:xs) acc disc play = do
                   handleTurns xs (acc ++ [player]) disc play 
 
 
+
 -- Prints the hands Dealers first
 printHands :: Deck -> Deck -> Bool-> IO ()
 printHands dealerHand playerHand showDealersFullHand = do
