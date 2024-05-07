@@ -63,10 +63,9 @@ getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:_)) = card
 
 hasRemainingCards :: Deck -> Int -> Bool
-hasRemainingCards (Deck []) _ = False
-hasRemaingingCards (Deck cards) n
-  | length cards < n = False
-  | otherwise = True
+hasRemainingCards EmptyDeck _ = False
+hasRemainingCards (Deck cards) n = length cards >= n
+
 
 takeXCards :: Deck -> Int -> Deck
 takeXCards EmptyDeck _    = EmptyDeck
