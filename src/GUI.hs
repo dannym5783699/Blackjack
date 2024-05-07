@@ -7,19 +7,20 @@ import           RegBlackJackGameMAC
 import           ShuffleDeck
 
 
-data World = World {playerHand   :: Deck
-                    , dealerHand :: Deck
-                    , discPile   :: Deck
-                    , playDeck   :: Deck
-                    , playerTurn :: Bool
+data World = World {playerHand      :: Deck
+                    , dealerHand    :: Deck
+                    , discPile      :: Deck
+                    , playDeck      :: Deck
+                    , playerTurn    :: Bool
+                    , resultMessage :: String
                     }
 
 setWorld :: World -> Picture
 setWorld world
   | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
-                          ++ (cardPictures 120 (dealerHand world))
-                          ++ (cardPictures (-60) (playerHand world)))
-  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton]
+                                ++ (cardPictures 120 (dealerHand world))
+                                ++ (cardPictures (-60) (playerHand world)))
+  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world))]
                           ++ (cardPictures 120 (dealerHand world))
                           ++ (cardPictures (-60) (playerHand world)))
 
@@ -37,10 +38,14 @@ handleEvent _ world = world
 
 hitPlayer :: World -> World
 hitPlayer world =
-  if (canPlayerPlay (playerHand world)) then world {playerHand = playerHNew
+  if (canPlayerPlay (playerHand world)) then
+    if (canPlayerPlay (playerHNew)) then world {playerHand = playerHNew
                                                     , discPile = discPNew
                                                     , playDeck = playDNew}
-  else world {playerTurn = False}
+    else showResults (world {playerHand = playerHNew
+                                                    , discPile = discPNew
+                                                    , playDeck = playDNew})
+  else showResults world
     where
       (playerHNew, discPNew, playDNew) = dealCard (playerHand world) (discPile world) (playDeck world)
 
@@ -48,9 +53,11 @@ showResults :: World -> World
 showResults world = world {dealerHand = dealerHandNew
                           , discPile = discPileNew
                           , playDeck = playDeckNew
-                          , playerTurn = False}
+                          , playerTurn = False
+                          , resultMessage = resultMessageNew}
   where
     (dealerHandNew, discPileNew, playDeckNew) = takeDealerTurn (dealerHand world) (discPile world) (playDeck world)
+    resultMessageNew = show (determinResults (dealerHand world) (playerHand world))
 
 
 getNextHand :: World -> World
@@ -72,7 +79,7 @@ startGUI = do
   let shuffledDeck = initialDeck
   let (playerHandInit, dealerHandInit, discPileInit, playDeckInit) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  let startWorld = World playerHandInit dealerHandInit discPileInit playDeckInit True
+  let startWorld = World playerHandInit dealerHandInit discPileInit playDeckInit True ""
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
   --display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
@@ -257,6 +264,9 @@ hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),
 stayButton :: Picture
 stayButton = pictures [color boldColor $ polygon [(100,-50),(300,-50),(300,-100),(100,-100)]
                       , color darkColor $ translate (170) (-85) $ scale (0.25) (0.25) $ text "Stay"]
+
+resultsPanel :: String -> Picture
+resultsPanel resultM = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
 
 dealerLabel :: Picture
 dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
