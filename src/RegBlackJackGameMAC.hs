@@ -52,10 +52,10 @@ gameLoop discPile playDeck
       resetGameLoop discPile1 playDeck1
 
     else do
-      (playerHand2, discPile2, playDeck2) <- takePlayerTurn playerHand1 discPile1 playDeck1
+      (playerHand2, discPile2, playDeck2) <- handleSplits [playerHand1] discPile1 playDeck1 dealerHand1
       let (dealerHand2, discPile3, playDeck3) = takeDealerTurn dealerHand1 discPile2 playDeck2
-      printHands dealerHand2 playerHand2 True
-      printResults dealerHand2 playerHand2
+      printMultiHands dealerHand2 playerHand2 True
+      printMultiResults dealerHand2 playerHand2
       resetGameLoop discPile3 playDeck3
 
   | otherwise = print "There are no cards left in the deck, Thank you for Playing!"
@@ -100,11 +100,47 @@ takePlayerTurn playerHand discPile playDeck
 
 
 
+handleSplits :: [Deck] -> Deck -> Deck -> Deck -> IO ([Deck], Deck, Deck)
+handleSplits playerHands discPile playDeck dealer
+          | hasPlayable playerHands = do
+                 if canSplit playerHands then do
+                     putStrLn "Would you like to split? ('Y' or 'N')"
+                     char <- getChar
+                     _ <- getChar
+                     if char == 'Y' || char == 'y' then do
+                         let pHand = splitDeck playerHands
+                         let (deck1, disc1, play1) = dealCard (head (drop (length pHand - 2) pHand)) discPile playDeck
+                         let (deck2, disc2, play2) = dealCard (head (drop (length pHand - 1) pHand)) disc1 play1
+                         let finalHand = take (length pHand - 2) pHand ++ [deck1] ++ [deck2]
+                         printMultiHands dealer finalHand False
+                         handleSplits finalHand disc2 play2 dealer
+                      else do
+                        handleTurns playerHands [] discPile playDeck
+                  else do
+                    handleTurns playerHands [] discPile playDeck         
+          | otherwise = do
+              return (playerHands, discPile, playDeck)          
+
+
+printMultiHands :: Deck -> [Deck] -> Bool -> IO ()
+printMultiHands dealer [] _ = return ()
+printMultiHands dealer (x:xs) b = do 
+                              printHands dealer x b
+                              printMultiHands dealer xs b
+
+
+printMultiResults :: Deck -> [Deck] -> IO ()
+printMultiResults _ [] = return ()
+printMultiResults dealer (x:xs) = do
+                         printResults dealer x
+                         printMultiResults dealer xs
+
+
 handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> IO ([Deck], Deck, Deck)
 handleTurns [] acc disc play = return (acc, disc, play)
 handleTurns (x:xs) acc disc play = do
                   (player, disc, play) <- takePlayerTurn x disc play
-                  handleTurns xs (player : acc) disc play 
+                  handleTurns xs (acc ++ [player]) disc play 
 
 
 -- Prints the hands Dealers first
