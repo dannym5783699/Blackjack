@@ -57,7 +57,7 @@ cabal run exes -- --wind
 ## How to Run GUI
 ### Run Game in the GUI
 ```bash
-cabal run exes -- --mac --gui
+cabal run exes -- --gui
 ```
 
 ## Opperation of CLI
