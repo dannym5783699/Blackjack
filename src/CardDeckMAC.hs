@@ -173,3 +173,13 @@ mapResults dealer (x:xs) = (determinResults dealer x) : (mapResults dealer xs)
 deckToCards :: Deck -> [Card]
 deckToCards EmptyDeck = []
 deckToCards (Deck as) = as
+
+hasAce :: [Card] -> Bool
+hasAce [] = False
+hasAce (x:xs) = (snd (cardToInt x)) == 11 || hasAce xs
+
+hasSoft :: [Card] -> Bool
+hasSoft xs | length xs /= 2 = False
+           | otherwise = hasAce xs
+
+           
