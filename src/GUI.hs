@@ -341,12 +341,12 @@ titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5)
                         ]
 
 nextCardButton :: Picture
-nextCardButton = pictures [ color darkColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
-                          , color boldColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color boldColor $ translate (119) (10) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color boldColor $ translate (121) (10) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color boldColor $ translate (120) (11) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color boldColor $ translate (120) (9)  $ scale (0.25) (0.25) $ text "Next Card"
+nextCardButton = pictures [ color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
+                          , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (119) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (121) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (120) (11) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (120) (9)  $ scale (0.25) (0.25) $ text "Next Card"
                           ]
 
 
