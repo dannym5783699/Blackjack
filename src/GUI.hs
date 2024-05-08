@@ -468,7 +468,8 @@ resultsPanel resultM (playerBlackJack,dealerBlackJack)
                                         , results]
   | otherwise = results
     where
-      results = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+      results = pictures [color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+                        ]
 
 
 
