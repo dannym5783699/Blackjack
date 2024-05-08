@@ -390,7 +390,13 @@ numDecksWindow = pictures [numDecksLabel
                           , sixDeckButton]
 
 numDecksLabel :: Picture
-numDecksLabel = color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+numDecksLabel = pictures [ color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-201) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-199) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-200) (101) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-200) (99)  $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         ]
+
 
 oneDeckButton :: Picture
 oneDeckButton = pictures [color boldColor $ polygon [(-170,0),(-130,0),(-130,-40),(-170,-40)]
