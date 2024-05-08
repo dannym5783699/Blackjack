@@ -473,10 +473,22 @@ resultsPanel resultM (playerBlackJack,dealerBlackJack)
 
 
 dealerLabel :: Picture
-dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+dealerLabel = pictures [ color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-151) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-149) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-150) (151) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-150) (149) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       ]
+
 
 playerLabel :: Picture
-playerLabel = color boldColor $ translate (-150) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+playerLabel = pictures [ color boldColor $ translate (-150) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-151) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-149) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-150) (-39) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-150) (-41) $ scale (0.25) (0.25) $ text "Player Hand"
+                       ]
+
 
 darkTeal :: Color
 darkTeal = makeColor 0.0863 0.627 0.522 1
