@@ -22,11 +22,11 @@ setWorld :: World -> Picture
 setWorld world
   | deckSelection world = pictures [titlePicture, numDecksWindow]
   | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
-                                ++ (cardPictures 120 (dealerHand world))
-                                ++ (cardPictures (-60) (playerHand world)))
+                                ++ (cardPictures True 120 (dealerHand world))
+                                ++ (cardPictures False (-60) (playerHand world)))
   | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world) (blackJackResults world))]
-                          ++ (cardPictures 120 (dealerHand world))
-                          ++ (cardPictures (-60) (playerHand world)))
+                          ++ (cardPictures False 120 (dealerHand world))
+                          ++ (cardPictures False (-60) (playerHand world)))
 
 handleEvent :: Event -> World -> World
 handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
@@ -173,23 +173,18 @@ startGUI = do
   let startWorld = World EmptyDeck EmptyDeck EmptyDeck EmptyDeck True "" (False,False) True [oneDeck,twoDeck,threeDeck,fourDeck,fiveDeck,sixDeck]
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
 
-fullDisplayPicture :: Deck -> Deck -> Picture
-fullDisplayPicture dHand pHand = pictures ([titlePicture, dealerLabel, playerLabel]
-                                          ++ (cardPictures 120 dHand)
-                                          ++ (cardPictures (-60) pHand))
+cardPictures :: Bool -> Float -> Deck -> [Picture]
+cardPictures _ _ EmptyDeck = []
+cardPictures _ _ (Deck []) = []
+cardPictures True height (Deck (c:cs)) = (getCardImage c (length (c:cs)) height) : [(hiddenCardPicture height (getMinWidth 1))]
+cardPictures hiddenDealer height (Deck (c:cs)) = getCardImage c (length (c:cs)) height : cardPictures hiddenDealer height (Deck cs)
 
-
-cardPictures :: Float -> Deck -> [Picture]
-cardPictures _ EmptyDeck = []
-cardPictures _ (Deck []) = []
-cardPictures height (Deck (c:cs)) = go c (length (c:cs)): cardPictures height (Deck cs)
-  where
-    go (Card s r) numCards = case s of
-      Diamond -> cardPicture diamondPicture height (getMinWidth numCards) (Card s r) boldColor
-      Heart   -> cardPicture heartPicture height (getMinWidth numCards) (Card s r) boldColor
-      Spade   -> cardPicture spadePicture height (getMinWidth numCards) (Card s r) darkColor
-      Club    -> cardPicture clubPicture height (getMinWidth numCards) (Card s r) darkColor
-
+getCardImage :: Card -> Int -> Float -> Picture
+getCardImage (Card s r) numCards height = case s of
+  Diamond -> cardPicture diamondPicture height (getMinWidth numCards) (Card s r) boldColor
+  Heart   -> cardPicture heartPicture height (getMinWidth numCards) (Card s r) boldColor
+  Spade   -> cardPicture spadePicture height (getMinWidth numCards) (Card s r) darkColor
+  Club    -> cardPicture clubPicture height (getMinWidth numCards) (Card s r) darkColor
 
 getMinWidth :: Int -> Float
 getMinWidth 1        = (-35)
@@ -301,6 +296,18 @@ clubPicture maxHeight minWidth = color darkColor $ polygon [((minWidth + 9),(max
                                                             ,((minWidth + 5),(maxHeight - 2))
                                                             ,((minWidth + 7),(maxHeight - 1))
                                                             ]
+
+hiddenCardPicture :: Float -> Float -> Picture
+hiddenCardPicture maxH minW = pictures [color cardColor $ polygon [(minW,maxH)
+                                                                  ,((minW + 70),maxH)
+                                                                  ,((minW + 70),(maxH - 100))
+                                                                  ,(minW,(maxH - 100))]
+                                        , color boldColor $ polygon [((minW + 10),(maxH - 10))
+                                                                    , ((minW + 60),(maxH - 10))
+                                                                    , ((minW + 35),(maxH - 50))]
+                                        , color darkColor $ polygon [((minW + 35),(maxH - 50))
+                                                                    ,((minW + 60),(maxH - 90))
+                                                                    ,((minW + 10),(maxH - 90))]]
 
 boldRankPicture :: Color -> Float -> Float -> String -> Picture
 boldRankPicture itemC maxH minW rank = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
