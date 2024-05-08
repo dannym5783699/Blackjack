@@ -18,6 +18,7 @@ data World = World {playerHand         :: [Deck]
                     , possibleDecks    :: [Deck]
                     , splitOption      :: Bool
                     }
+  deriving (Show)
 
 setWorld :: World -> Picture
 setWorld world
@@ -61,9 +62,17 @@ splitHand :: World -> World
 splitHand world = world {playerHand = playerHNew
                         , discPile = discPNew
                         , playDeck = playDNew
+                        , playerTurn = shouldTakeTurn
+                        , blackJackResults = (playerBlackJack,dealerBlackJack)
+                        , resultMessage = newResultsMessage
                         , splitOption = guiCanSplitDeck (playerHNew !! 0)}
     where
-      (playerHNew, discPNew, playDNew) = getSplitDecks (guiSplitDeck (playerHand world)) [] (discPile world) (playDeck world)
+      splitDecks = guiSplitDeck (playerHand world)
+      (playerH, discPNew, playDNew) = getSplitDecks (take 2 splitDecks) [] (discPile world) (playDeck world)
+      playerHNew = playerH ++ (drop 2 splitDecks)
+      (playerBlackJack, dealerBlackJack) = (hasBlackJack (playerHNew !! 0), hasBlackJack (dealerHand world))
+      newResultsMessage = show (determinResults (dealerHand world) (playerHNew !! 0))
+      shouldTakeTurn = not (playerBlackJack || dealerBlackJack)
 
 getSplitDecks :: [Deck] -> [Deck] -> Deck -> Deck -> ([Deck], Deck, Deck)
 getSplitDecks [] accDeck dPile pDeck = (accDeck,dPile,pDeck)
@@ -78,7 +87,7 @@ guiSplitDeck :: [Deck] -> [Deck]
 guiSplitDeck []                          = []
 guiSplitDeck (EmptyDeck:_)               = []
 guiSplitDeck ((Deck []):_)               = []
-guiSplitDeck ((Deck (card:cards)):decks) = Deck [card] : Deck (cards) : decks
+guiSplitDeck ((Deck (card:cards)):decks) = Deck [card] : [Deck (cards)] ++ decks
 
 getInitialHand :: Int -> World -> World
 getInitialHand n world = world {playerHand = [playerHandNew]
@@ -94,7 +103,7 @@ getInitialHand n world = world {playerHand = [playerHandNew]
     (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand ((possibleDecks world) !! (n - 1)) (discPile world)
     resultMessageNew = show (determinResults dealerHandNew playerHandNew)
     (playerBlackJack, dealerBlackJack) = (hasBlackJack playerHandNew, hasBlackJack dealerHandNew)
-    shouldTakeTurn = (not (playerBlackJack || playerBlackJack))
+    shouldTakeTurn = (not (playerBlackJack || dealerBlackJack))
 
 guiCanSplitDeck :: Deck -> Bool
 guiCanSplitDeck EmptyDeck    = False
@@ -130,10 +139,14 @@ hitPlayer world =
 
 showResults :: World -> World
 showResults world = world {playerTurn = False
+                          , discPile  = discPileNew
+                          , dealerHand = dealerHandNew
+                          , playDeck = playDeckNew
                           , splitOption = False
                           , resultMessage = resultMessageNew}
   where
-    resultMessageNew = show (determinResults (dealerHand world) ((playerHand world) !! 0))
+    (dealerHandNew, discPileNew, playDeckNew) = takeDealerTurn (dealerHand world) (discPile world) (playDeck world)
+    resultMessageNew = show (determinResults (dealerHandNew) ((playerHand world) !! 0))
 
 
 getNextHand :: World -> World
@@ -181,7 +194,7 @@ startGUI = do
 cardPictures :: Bool -> Float -> Deck -> [Picture]
 cardPictures _ _ EmptyDeck = []
 cardPictures _ _ (Deck []) = []
-cardPictures True height (Deck (c:cs)) = (getCardImage c (length (c:cs)) height) : [(hiddenCardPicture height (getMinWidth 1))]
+cardPictures True height (Deck (c:_)) = (getCardImage c 2 height) : [(hiddenCardPicture height (getMinWidth 1))]
 cardPictures hiddenDealer height (Deck (c:cs)) = getCardImage c (length (c:cs)) height : cardPictures hiddenDealer height (Deck cs)
 
 getCardImage :: Card -> Int -> Float -> Picture
