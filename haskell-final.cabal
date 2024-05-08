@@ -59,7 +59,7 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  CardDeckMAC, RegBlackJackGameMAC, CardDeckWIND, RegBlackJackGameWIND, ShuffleDeck, ShuffleDeckWIND, GUI, PlayerData, PlayerDataWIND
+    exposed-modules:  CardDeckMAC, RegBlackJackGameMAC, CardDeckWIND, RegBlackJackGameWIND, ShuffleDeck, ShuffleDeckWIND, GUI, PlayerData, PlayerDataWIND, RandomPlayBot
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -71,6 +71,7 @@ library
     build-depends:    base ^>=4.19.1.0,
                       random,
                       gloss
+                      
 
     -- Directories containing source files.
     hs-source-dirs:   src

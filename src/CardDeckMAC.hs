@@ -1,6 +1,6 @@
 module CardDeckMAC where
 import           System.Random
-
+ 
 printRNDNum :: IO ()
 printRNDNum = do
   num <- randomRIO (1, 100) :: IO Int
