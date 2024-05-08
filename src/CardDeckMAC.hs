@@ -15,7 +15,7 @@ instance Show Suit where
   show Spade   = "\x2663"
   show Club    = "\x2660"
 
-data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
+data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace | Error
   deriving(Eq, Ord, Enum)
 
 instance Show Rank where
@@ -32,9 +32,16 @@ instance Show Rank where
   show Queen = "Q"
   show King  = "K"
   show Ace   = "A"
+  show Error = "E"
 
+
+
+  
 data Card = Card Suit Rank
   deriving(Eq)
+
+
+data Hands = Hand Deck | Hands Deck Hands
 
 instance Show Card where
   show (Card a b) = "[" ++ show a ++ show b ++ "]"
@@ -61,6 +68,8 @@ addDecks (Deck n) (Deck c) = Deck (n ++ c)
 
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:_)) = card
+getFirstCard _ = undefined "Error, no cards"
+
 
 hasRemainingCards :: Deck -> Int -> Bool
 hasRemainingCards EmptyDeck _ = False
@@ -74,14 +83,22 @@ takeXCards (Deck cards) n = Deck (take n cards)
 
 addToRemovedDeck :: Deck -> Deck -> Deck
 addToRemovedDeck (Deck nrmCards) (Deck rmCards) = Deck (nrmCards ++ rmCards)
+addToRemovedDeck (Deck nrmCards) EmptyDeck = Deck (nrmCards)
+addToRemovedDeck EmptyDeck EmptyDeck = EmptyDeck
+addToRemovedDeck EmptyDeck (Deck rmCards) = Deck(rmCards)
+
 
 removeCard :: Deck -> Int -> Deck
 removeCard (Deck cards) x = Deck (drop x cards)
+removeCard EmptyDeck _ = EmptyDeck
 
 dealCard :: Deck -> Deck -> Deck -> (Deck, Deck, Deck)
 dealCard EmptyDeck EmptyDeck (Deck playCards) = (Deck (take 1 playCards), Deck (take 1 playCards), Deck (drop 1 playCards))
 dealCard EmptyDeck (Deck rCards) (Deck playCards) = (Deck (take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
 dealCard (Deck hand) (Deck rCards) (Deck playCards) = (Deck (hand ++ take 1 playCards), Deck (rCards ++ take 1 playCards), Deck (drop 1 playCards))
+dealCard xs bs EmptyDeck = (xs, bs, EmptyDeck)
+dealCard _ _ _ = undefined "Deal card error."
+
 
 -- Returns a tupal of the cards, first value is low value, second value is high value
 cardToInt :: Card -> (Int, Int)
@@ -99,6 +116,7 @@ cardToInt (Card _ r1) = case r1 of
   Queen -> (10,10)
   King  -> (10,10)
   Ace   -> (1,11)
+  Error -> (-1, -1)
 
 -- Gets the value of the hand, first value is the low value, second value is the high value
 getHandValue :: Deck -> (Int,Int)
@@ -120,6 +138,11 @@ canPlayerPlay :: Deck -> Bool
 canPlayerPlay hand = go (getHandValue hand)
   where
     go (l,_) = l < 21
+
+hasPlayable :: [Deck] -> Bool
+hasPlayable [] = False
+hasPlayable xs = or (map canPlayerPlay xs)
+
 
 -- Determines if the hand equals 21 or BlackJack
 hasBlackJack :: Deck -> Bool
@@ -147,3 +170,12 @@ determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandVal
       | hd > 21 && ld == lp = Tie ld
       | (ld > 21) || (hp <=21 && hd > 21 && ld < hp) || (hp > 21 && hd > 21 && ld < lp) || (hd <= 21 && hp <= 21 && hd < hp)= PlayerWon
       | otherwise = DealerWon
+
+mapResults :: Deck -> [Deck] -> [Result]
+mapResults _ [] = []
+mapResults dealer (x:xs) = (determinResults dealer x) : (mapResults dealer xs)
+
+
+deckToCards :: Deck -> [Card]
+deckToCards EmptyDeck = []
+deckToCards (Deck as) = as
