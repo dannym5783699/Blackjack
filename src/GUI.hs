@@ -7,28 +7,37 @@ import           RegBlackJackGameMAC
 import           ShuffleDeck
 
 
-data World = World {playerHand      :: Deck
-                    , dealerHand    :: Deck
-                    , discPile      :: Deck
-                    , playDeck      :: Deck
-                    , playerTurn    :: Bool
-                    , resultMessage :: String
-                    , numOfDecks    :: Int
-                    , deckSelection :: Bool
+data World = World {playerHand         :: Deck
+                    , dealerHand       :: Deck
+                    , discPile         :: Deck
+                    , playDeck         :: Deck
+                    , playerTurn       :: Bool
+                    , resultMessage    :: String
+                    , blackJackResults :: (Bool,Bool)
+                    , deckSelection    :: Bool
+                    , possibleDecks    :: [Deck]
                     }
 
 setWorld :: World -> Picture
 setWorld world
-  | deckSelection world = pictures [titlePicture, numDecksLabel]
+  | deckSelection world = pictures [titlePicture, numDecksWindow]
   | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
                                 ++ (cardPictures 120 (dealerHand world))
                                 ++ (cardPictures (-60) (playerHand world)))
-  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world))]
+  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world) (blackJackResults world))]
                           ++ (cardPictures 120 (dealerHand world))
                           ++ (cardPictures (-60) (playerHand world)))
 
 handleEvent :: Event -> World -> World
 handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
+  | (deckSelection world) && y >= -40 && y <= 0 =
+    if (x >= (-170) && x <= (-130)) then getInitialHand 1 world
+    else if (x >= (-110) && x <= (-70)) then getInitialHand 2 world
+    else if (x >= (-50) && x <= (-10)) then getInitialHand 3 world
+    else if (x >= 10 && x <= 50) then getInitialHand 4 world
+    else if (x >= 70 && x <= 110) then getInitialHand 5 world
+    else if (x >= 130 && x <= 170) then getInitialHand 6 world
+    else world
   | not (playerTurn world) =
     if (x >= 100 && x <= 300 && y >= 0 && y <= 50) then do
       getNextHand world
@@ -38,6 +47,51 @@ handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
     else if (x >= 100 && x <= 300 && y >= (-100) && y <= (-50)) then showResults world
     else world
 handleEvent _ world = world
+
+getInitialHand :: Int -> World -> World
+getInitialHand n world
+  | hasBlackJack playerHandNew && hasBlackJack dealerHandNew = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = False
+              , deckSelection = False
+              , blackJackResults = (True,True)
+              , resultMessage = resultMessageNew}
+
+  | hasBlackJack playerHandNew = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = False
+              , deckSelection = False
+              , blackJackResults = (True,False)
+              , resultMessage = resultMessageNew}
+
+  | hasBlackJack dealerHandNew = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = False
+              , deckSelection = False
+              , blackJackResults = (False,True)
+              , resultMessage = resultMessageNew}
+
+  | otherwise = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = True
+              , deckSelection = False
+              , blackJackResults = (False,False)}
+  where
+    (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand ((possibleDecks world) !! (n - 1)) (discPile world)
+    resultMessageNew = show (determinResults dealerHandNew playerHandNew)
+
+getShuffledDecks :: Int -> IO Deck
+getShuffledDecks n = do
+  shuffledDeck <- shuffleDeck (createVarDeck n)
+  return shuffledDeck
 
 hitPlayer :: World -> World
 hitPlayer world =
@@ -64,13 +118,44 @@ showResults world = world {dealerHand = dealerHandNew
 
 
 getNextHand :: World -> World
-getNextHand world = (world {playerHand = playerHandNew
+getNextHand world
+  | hasBlackJack playerHandNew && hasBlackJack dealerHandNew = world {playerHand = playerHandNew
               , dealerHand = dealerHandNew
               , discPile = discPileNew
               , playDeck = playDeckNew
-              , playerTurn = True})
+              , playerTurn = False
+              , deckSelection = False
+              , blackJackResults = (True,True)
+              , resultMessage = resultMessageNew}
+
+  | hasBlackJack playerHandNew = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = False
+              , deckSelection = False
+              , blackJackResults = (True,False)
+              , resultMessage = resultMessageNew}
+
+  | hasBlackJack dealerHandNew = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = False
+              , deckSelection = False
+              , blackJackResults = (False,True)
+              , resultMessage = resultMessageNew}
+
+  | otherwise = world {playerHand = playerHandNew
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = True
+              , deckSelection = False
+              , blackJackResults = (False,False)}
   where
     (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand (playDeck world) (discPile world)
+    resultMessageNew = show (determinResults dealerHandNew playerHandNew)
 
 
 nextEvent :: Float -> World -> World
@@ -78,13 +163,15 @@ nextEvent _ world = world
 
 startGUI :: IO ()
 startGUI = do
-  initialDeck <- (shuffleDeck createDeck)
-  let shuffledDeck = initialDeck
-  let (playerHandInit, dealerHandInit, discPileInit, playDeckInit) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  let startWorld = World EmptyDeck EmptyDeck EmptyDeck playDeckInit True "" 0 True
+  oneDeck <- getShuffledDecks 1
+  twoDeck <- getShuffledDecks 2
+  threeDeck <- getShuffledDecks 3
+  fourDeck <- getShuffledDecks 4
+  fiveDeck <- getShuffledDecks 5
+  sixDeck <- getShuffledDecks 6
+  let startWorld = World EmptyDeck EmptyDeck EmptyDeck EmptyDeck True "" (False,False) True [oneDeck,twoDeck,threeDeck,fourDeck,fiveDeck,sixDeck]
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
-  --display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
 fullDisplayPicture :: Deck -> Deck -> Picture
 fullDisplayPicture dHand pHand = pictures ([titlePicture, dealerLabel, playerLabel]
@@ -268,11 +355,55 @@ stayButton :: Picture
 stayButton = pictures [color boldColor $ polygon [(100,-50),(300,-50),(300,-100),(100,-100)]
                       , color darkColor $ translate (170) (-85) $ scale (0.25) (0.25) $ text "Stay"]
 
+numDecksWindow :: Picture
+numDecksWindow = pictures [numDecksLabel
+                          , oneDeckButton
+                          , twoDeckButton
+                          , threeDeckButton
+                          , fourDeckButton
+                          , fiveDeckButton
+                          , sixDeckButton]
+
 numDecksLabel :: Picture
 numDecksLabel = color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
 
-resultsPanel :: String -> Picture
-resultsPanel resultM = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+oneDeckButton :: Picture
+oneDeckButton = pictures [color boldColor $ polygon [(-170,0),(-130,0),(-130,-40),(-170,-40)]
+                          , color darkColor $ translate (-158) (-32) $ scale (0.25) (0.25) $ text "1"]
+
+twoDeckButton :: Picture
+twoDeckButton = pictures [color boldColor $ polygon [(-110,0),(-70,0),(-70,-40),(-110,-40)]
+                          , color darkColor $ translate (-98) (-32) $ scale (0.25) (0.25) $ text "2"]
+
+threeDeckButton :: Picture
+threeDeckButton = pictures [color boldColor $ polygon [(-50,0),(-10,0),(-10,-40),(-50,-40)]
+                          , color darkColor $ translate (-38) (-32) $ scale (0.25) (0.25) $ text "3"]
+
+fourDeckButton :: Picture
+fourDeckButton = pictures [color boldColor $ polygon [(10,0),(50,0),(50,-40),(10,-40)]
+                          , color darkColor $ translate (22) (-32) $ scale (0.25) (0.25) $ text "4"]
+
+fiveDeckButton :: Picture
+fiveDeckButton = pictures [color boldColor $ polygon [(70,0),(110,0),(110,-40),(70,-40)]
+                          , color darkColor $ translate (82) (-32) $ scale (0.25) (0.25) $ text "5"]
+
+sixDeckButton :: Picture
+sixDeckButton = pictures [color boldColor $ polygon [(130,0),(170,0),(170,-40),(130,-40)]
+                          , color darkColor $ translate (142) (-32) $ scale (0.25) (0.25) $ text "6"]
+
+resultsPanel :: String -> (Bool,Bool) -> Picture
+resultsPanel resultM (playerBlackJack,dealerBlackJack)
+  | playerBlackJack == True && dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  , results]
+  | playerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , results]
+  | dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , results]
+  | otherwise = results
+    where
+      results = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+
+
 
 dealerLabel :: Picture
 dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
