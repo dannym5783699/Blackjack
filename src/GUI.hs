@@ -461,15 +461,30 @@ sixDeckButton = pictures [ color boldColor $ polygon [(130,0),(170,0),(170,-40),
 resultsPanel :: String -> (Bool,Bool) -> Picture
 resultsPanel resultM (playerBlackJack,dealerBlackJack)
   | playerBlackJack == True && dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-351) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-349) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-350) (-199) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-350) (-201) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
                                                                   , results]
   | playerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-351) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-349) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-350) (-199) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-350) (-201) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
                                         , results]
   | dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-351) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-349) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-350) (-199) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-350) (-201) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
                                         , results]
   | otherwise = results
     where
       results = pictures [color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
-                        ]
+                        , color darkColor $ translate (-351) (-250) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-349) (-250) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-350) (-249) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-350) (-251) $ scale (0.25) (0.25) $ text resultM]
 
 
 
