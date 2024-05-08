@@ -231,3 +231,43 @@ Would you like to play again? ('Y' or 'N')
 n
 Total wins: 2
 Thank you for Playing!
+
+Basic Rules of Blackjack
+
+-The primary goal of Blackjack s to beat the dealer's hand without your hand exceeding a total of 21 points. You want to get your card values added up to 21 or closer than the dealer.
+
+Card Values:
+-Number cards (2 through 10) are worth their face value.
+-Face cards (Jack, Queen, King) are each worth 10 points.
+-Aces can be worth either 1 or 11 points, depending on which is more favorable to the hand. You can choose!
+
+How the Game works and is played
+
+- Each player starts with two cards, as well as the dealer. One of the dealer’s cards is face up and one is face down.
+
+- Players decide how to play their hands in turn, with options including 'Hit', 'Stand', 'Split', or 'Surrender'. Hit means get another card from the dealer. Stand means you saty with your cards not getting anymore. Split is allowede when you have two of the same card and you can choose to swith one of them.
+
+-After all players have finished their turns, the dealer reveals their hole card. The dealer must hit if their total is 16 or less, and must stand on 17 or more.
+
+How to determine a winner
+-If you exceed 21 points, you and automatically lose.
+-If you don’t exceed 21 and your total is higher than the dealer’s, you win.
+-If the player and Delaer have the same value, the money betted is retunred to each player.
+
+This game can be played with multiple people and multiple decks.
+
+## Features
+- Simulation of Blackjack games**: Play against an automated dealer.
+- Card Counting Practice**: Includes features to assist in learning and practicing card counting.
+- Customizable Settings**: Choose the number of decks and other game rules to simulate different casino settings.
+- Statistical Analysis**: Review your play sessions with detailed stats on your win rate, the frequency of Blackjack, and more.
+-Interactive CLI: Simple and intuitive command-line interface for easy navigation and game play.
+
+## Configuration Options
+Modify the game's settings to suit your practice needs, including:
+- Number of Decks: Configure from 1 to 6 decks.
+
+
+
+
+

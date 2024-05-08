@@ -461,22 +461,50 @@ sixDeckButton = pictures [ color boldColor $ polygon [(130,0),(170,0),(170,-40),
 resultsPanel :: String -> (Bool,Bool) -> Picture
 resultsPanel resultM (playerBlackJack,dealerBlackJack)
   | playerBlackJack == True && dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-351) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-349) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-350) (-199) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  ,color darkColor $ translate (-350) (-201) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
                                                                   , results]
   | playerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-351) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-349) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-350) (-199) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , color darkColor $ translate (-350) (-201) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
                                         , results]
   | dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-351) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-349) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-350) (-199) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , color darkColor $ translate (-350) (-201) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
                                         , results]
   | otherwise = results
     where
-      results = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+      results = pictures [color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-351) (-250) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-349) (-250) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-350) (-249) $ scale (0.25) (0.25) $ text resultM
+                        , color darkColor $ translate (-350) (-251) $ scale (0.25) (0.25) $ text resultM]
 
 
 
 dealerLabel :: Picture
-dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+dealerLabel = pictures [ color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-151) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-149) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-150) (151) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       , color darkColor $ translate (-150) (149) $ scale (0.25) (0.25) $ text "Dealer Hand"
+                       ]
+
 
 playerLabel :: Picture
-playerLabel = color boldColor $ translate (-150) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+playerLabel = pictures [ color boldColor $ translate (-150) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-151) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-149) (-40) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-150) (-39) $ scale (0.25) (0.25) $ text "Player Hand"
+                       , color boldColor $ translate (-150) (-41) $ scale (0.25) (0.25) $ text "Player Hand"
+                       ]
+
 
 darkTeal :: Color
 darkTeal = makeColor 0.0863 0.627 0.522 1
