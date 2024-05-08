@@ -351,16 +351,34 @@ nextCardButton = pictures [ color boldColor $ polygon [(100,50),(300,50),(300,0)
 
 
 hitMeButton :: Picture
-hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
-                        , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"]
+hitMeButton = pictures [ color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
+                       , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (144) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (146) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (145) (61) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (145) (59) $ scale (0.25) (0.25) $ text "Hit Me"
+                       ]
+
 
 stayButton :: Picture
-stayButton = pictures [color boldColor $ polygon [(100,0),(300,0),(300,-50),(100,-50)]
-                      , color darkColor $ translate (170) (-35) $ scale (0.25) (0.25) $ text "Stay"]
+stayButton = pictures [ color boldColor $ polygon [(100,0),(300,0),(300,-50),(100,-50)]
+                      , color darkColor $ translate (170) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (169) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (171) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (170) (-34) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (170) (-36) $ scale (0.25) (0.25) $ text "Stay"
+                      ]
+
 
 splitButton :: Picture
-splitButton = pictures [color boldColor $ polygon [(100,-100),(300,-100),(300,-150),(100,-150)]
-                        , color darkColor $ translate (120) (-135) $ scale (0.25) (0.25) $ text "Split Deck"]
+splitButton = pictures [ color boldColor $ polygon [(100,-100),(300,-100),(300,-150),(100,-150)]
+                       , color darkColor $ translate (120) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (119) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (121) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (120) (-134) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (120) (-136) $ scale (0.25) (0.25) $ text "Split Deck"
+                       ]
+
 
 numDecksWindow :: Picture
 numDecksWindow = pictures [numDecksLabel
