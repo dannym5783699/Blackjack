@@ -92,6 +92,8 @@ printMultiResults dealer (x:xs) = do
                          printResults dealer x
                          printMultiResults dealer xs
 
+
+
 -- Deals out the player and dealers hand alternating cards first to player then to the dealer
 dealHand :: Deck -> Deck -> (Deck, Deck, Deck, Deck)
 dealHand pDeck discPile = (pHand2, dHand2, rmDeck21, pDeck21)
