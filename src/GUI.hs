@@ -7,67 +7,173 @@ import           RegBlackJackGameMAC
 import           ShuffleDeck
 
 
-data World = World {playerHand      :: Deck
-                    , dealerHand    :: Deck
-                    , discPile      :: Deck
-                    , playDeck      :: Deck
-                    , playerTurn    :: Bool
-                    , resultMessage :: String
+data World = World {playerHand         :: [Deck]
+                    , dealerHand       :: Deck
+                    , discPile         :: Deck
+                    , playDeck         :: Deck
+                    , playerTurn       :: Bool
+                    , resultMessage    :: String
+                    , blackJackResults :: (Bool,Bool)
+                    , deckSelection    :: Bool
+                    , possibleDecks    :: [Deck]
+                    , splitOption      :: Bool
                     }
+  deriving (Show)
 
 setWorld :: World -> Picture
 setWorld world
+  | deckSelection world = pictures [titlePicture, numDecksWindow]
+
+  | splitOption world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton, splitButton]
+                                ++ (cardPictures True 120 (dealerHand world))
+                                ++ (cardPictures False (-60) ((playerHand world) !! 0)))
+
   | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
-                                ++ (cardPictures 120 (dealerHand world))
-                                ++ (cardPictures (-60) (playerHand world)))
-  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world))]
-                          ++ (cardPictures 120 (dealerHand world))
-                          ++ (cardPictures (-60) (playerHand world)))
+                                ++ (cardPictures True 120 (dealerHand world))
+                                ++ (cardPictures False (-60) ((playerHand world) !! 0)))
+
+  | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world) (blackJackResults world))]
+                          ++ (cardPictures False 120 (dealerHand world))
+                          ++ (cardPictures False (-60) ((playerHand world) !! 0)))
 
 handleEvent :: Event -> World -> World
 handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
-  | not (playerTurn world) =
+  | (deckSelection world) && y >= -40 && y <= 0 =
+    if (x >= (-170) && x <= (-130)) then getInitialHand 1 world
+    else if (x >= (-110) && x <= (-70)) then getInitialHand 2 world
+    else if (x >= (-50) && x <= (-10)) then getInitialHand 3 world
+    else if (x >= 10 && x <= 50) then getInitialHand 4 world
+    else if (x >= 70 && x <= 110) then getInitialHand 5 world
+    else if (x >= 130 && x <= 170) then getInitialHand 6 world
+    else world
+  | playerTurn world && x >= 100 && x <= 300 =
+    if (y >= 50 && y <= 100) then hitPlayer world
+    else if (y >= (-50) && y <= (0)) then showResults world
+    else if (y >= (-150) && y <= (-100)) then splitHand world
+    else world
+  | otherwise =
     if (x >= 100 && x <= 300 && y >= 0 && y <= 50) then do
       getNextHand world
     else world
-  | otherwise =
-    if (x >= 100 && x <= 300 && y >= 50 && y <= 100) then hitPlayer world
-    else if (x >= 100 && x <= 300 && y >= (-100) && y <= (-50)) then showResults world
-    else world
+
 handleEvent _ world = world
+
+splitHand :: World -> World
+splitHand world = world {playerHand = playerHNew
+                        , discPile = discPNew
+                        , playDeck = playDNew
+                        , playerTurn = shouldTakeTurn
+                        , blackJackResults = (playerBlackJack,dealerBlackJack)
+                        , resultMessage = newResultsMessage
+                        , splitOption = guiCanSplitDeck (playerHNew !! 0)}
+    where
+      splitDecks = guiSplitDeck (playerHand world)
+      (playerH, discPNew, playDNew) = getSplitDecks (take 2 splitDecks) [] (discPile world) (playDeck world)
+      playerHNew = playerH ++ (drop 2 splitDecks)
+      (playerBlackJack, dealerBlackJack) = (hasBlackJack (playerHNew !! 0), hasBlackJack (dealerHand world))
+      newResultsMessage = show (determinResults (dealerHand world) (playerHNew !! 0))
+      shouldTakeTurn = not (playerBlackJack || dealerBlackJack)
+
+getSplitDecks :: [Deck] -> [Deck] -> Deck -> Deck -> ([Deck], Deck, Deck)
+getSplitDecks [] accDeck dPile pDeck = (accDeck,dPile,pDeck)
+getSplitDecks (pHand:pHands) [] dPile pDeck = getSplitDecks pHands [pHandNew] discPileNew playDeckNew
+  where
+    (pHandNew, discPileNew, playDeckNew) = dealCard pHand dPile pDeck
+getSplitDecks (pHand:pHands) accDeck dPile pDeck = getSplitDecks pHands (accDeck ++ [pHandNew]) discPileNew playDeckNew
+  where
+    (pHandNew, discPileNew, playDeckNew) = dealCard pHand dPile pDeck
+
+guiSplitDeck :: [Deck] -> [Deck]
+guiSplitDeck []                          = []
+guiSplitDeck (EmptyDeck:_)               = []
+guiSplitDeck ((Deck []):_)               = []
+guiSplitDeck ((Deck (card:cards)):decks) = Deck [card] : [Deck (cards)] ++ decks
+
+getInitialHand :: Int -> World -> World
+getInitialHand n world = world {playerHand = [playerHandNew]
+              , dealerHand = dealerHandNew
+              , discPile = discPileNew
+              , playDeck = playDeckNew
+              , playerTurn = shouldTakeTurn
+              , deckSelection = False
+              , blackJackResults = (playerBlackJack, dealerBlackJack)
+              , resultMessage = resultMessageNew
+              , splitOption = ((guiCanSplitDeck playerHandNew) && shouldTakeTurn)}
+  where
+    (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand ((possibleDecks world) !! (n - 1)) (discPile world)
+    resultMessageNew = show (determinResults dealerHandNew playerHandNew)
+    (playerBlackJack, dealerBlackJack) = (hasBlackJack playerHandNew, hasBlackJack dealerHandNew)
+    shouldTakeTurn = (not (playerBlackJack || dealerBlackJack))
+
+guiCanSplitDeck :: Deck -> Bool
+guiCanSplitDeck EmptyDeck    = False
+guiCanSplitDeck (Deck [])    = False
+guiCanSplitDeck (Deck cards) = cardEqual (cards !! 0) (cards !! 1)
+
+cardEqual :: Card -> Card -> Bool
+cardEqual (Card _ r1) (Card _ r2)
+  | r1 == r2 = True
+  | r1 == Ten && (r2 == Jack || r2 == Queen || r2 == King) = True
+  | r1 == Jack && (r2 == Ten || r2 == Queen || r2 == King) = True
+  | r1 == Queen && (r2 == Ten || r2 == Jack || r2 == King) = True
+  | r1 == King && (r2 == Ten || r2 == Jack || r2 == Queen) = True
+  | otherwise = False
+
+getShuffledDecks :: Int -> IO Deck
+getShuffledDecks n = do
+  shuffledDeck <- shuffleDeck (createVarDeck n)
+  return shuffledDeck
 
 hitPlayer :: World -> World
 hitPlayer world =
-  if (canPlayerPlay (playerHand world)) then
-    if (canPlayerPlay (playerHNew)) then world {playerHand = playerHNew
+  if (canPlayerPlay ((playerHand world) !! 0)) then
+    if (canPlayerPlay (playerHNew)) then world {playerHand = [playerHNew]
                                                     , discPile = discPNew
                                                     , playDeck = playDNew}
-    else showResults (world {playerHand = playerHNew
+    else showResults (world {playerHand = [playerHNew]
                                                     , discPile = discPNew
                                                     , playDeck = playDNew})
   else showResults world
     where
-      (playerHNew, discPNew, playDNew) = dealCard (playerHand world) (discPile world) (playDeck world)
+      (playerHNew, discPNew, playDNew) = dealCard ((playerHand world) !! 0) (discPile world) (playDeck world)
 
 showResults :: World -> World
-showResults world = world {dealerHand = dealerHandNew
-                          , discPile = discPileNew
+showResults world = world {playerTurn = False
+                          , discPile  = discPileNew
+                          , dealerHand = dealerHandNew
                           , playDeck = playDeckNew
-                          , playerTurn = False
+                          , splitOption = False
                           , resultMessage = resultMessageNew}
   where
     (dealerHandNew, discPileNew, playDeckNew) = takeDealerTurn (dealerHand world) (discPile world) (playDeck world)
-    resultMessageNew = show (determinResults (dealerHand world) (playerHand world))
+    resultMessageNew = show (determinResults (dealerHandNew) ((playerHand world) !! 0))
 
 
 getNextHand :: World -> World
-getNextHand world = (world {playerHand = playerHandNew
+getNextHand world
+  | length (playerHand world) > 1 = world {playerHand = nextPlayerHand
+                                          , playerTurn = nextShouldTakeTurn
+                                          , blackJackResults = (nextPlayerBlackJack,nextDealerBlackJack)
+                                          , resultMessage = nextResultMessageNew
+                                          , splitOption = ((guiCanSplitDeck (nextPlayerHand !! 0)) && shouldTakeTurn)}
+  |otherwise = world {playerHand = [playerHandNew]
               , dealerHand = dealerHandNew
               , discPile = discPileNew
               , playDeck = playDeckNew
-              , playerTurn = True})
+              , playerTurn = shouldTakeTurn
+              , blackJackResults = (playerBlackJack, dealerBlackJack)
+              , resultMessage = resultMessageNew
+              , splitOption = ((guiCanSplitDeck playerHandNew) && shouldTakeTurn)}
   where
     (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand (playDeck world) (discPile world)
+    resultMessageNew = show (determinResults dealerHandNew playerHandNew)
+    (playerBlackJack, dealerBlackJack) = (hasBlackJack playerHandNew, hasBlackJack dealerHandNew)
+    shouldTakeTurn = (not (playerBlackJack || dealerBlackJack))
+    nextPlayerHand = drop 1 (playerHand world)
+    (nextPlayerBlackJack, nextDealerBlackJack) = (hasBlackJack (nextPlayerHand !! 0), hasBlackJack (dealerHand world))
+    nextShouldTakeTurn = (not (nextPlayerBlackJack || nextDealerBlackJack))
+    nextResultMessageNew = show (determinResults (dealerHand world) (nextPlayerHand !! 0))
+
 
 
 nextEvent :: Float -> World -> World
@@ -75,83 +181,54 @@ nextEvent _ world = world
 
 startGUI :: IO ()
 startGUI = do
-  initialDeck <- (shuffleDeck createDeck)
-  let shuffledDeck = initialDeck
-  let (playerHandInit, dealerHandInit, discPileInit, playDeckInit) = dealHand shuffledDeck EmptyDeck
   let gameHeight = 600
-  let startWorld = World playerHandInit dealerHandInit discPileInit playDeckInit True ""
+  oneDeck <- getShuffledDecks 1
+  twoDeck <- getShuffledDecks 2
+  threeDeck <- getShuffledDecks 3
+  fourDeck <- getShuffledDecks 4
+  fiveDeck <- getShuffledDecks 5
+  sixDeck <- getShuffledDecks 6
+  let startWorld = World [EmptyDeck] EmptyDeck EmptyDeck EmptyDeck True "" (False,False) True [oneDeck,twoDeck,threeDeck,fourDeck,fiveDeck,sixDeck] False
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
-  --display (InWindow "Black Jack" (800, gameHeight) (10, 10)) darkTeal (fullDisplayPicture dealerHand playerHand)
 
-fullDisplayPicture :: Deck -> Deck -> Picture
-fullDisplayPicture dHand pHand = pictures ([titlePicture, dealerLabel, playerLabel]
-                                          ++ (cardPictures 120 dHand)
-                                          ++ (cardPictures (-60) pHand))
+cardPictures :: Bool -> Float -> Deck -> [Picture]
+cardPictures _ _ EmptyDeck = []
+cardPictures _ _ (Deck []) = []
+cardPictures True height (Deck (c:_)) = (getCardImage c 2 height) : [(hiddenCardPicture height (getMinWidth 1))]
+cardPictures hiddenDealer height (Deck (c:cs)) = getCardImage c (length (c:cs)) height : cardPictures hiddenDealer height (Deck cs)
 
-
-cardPictures :: Float -> Deck -> [Picture]
-cardPictures _ EmptyDeck = []
-cardPictures _ (Deck []) = []
-cardPictures height (Deck (c:cs)) = go c (length (c:cs)): cardPictures height (Deck cs)
-  where
-    go (Card s r) numCards = case s of
-      Diamond -> diamondCardPicture height (getMinWidth numCards) (Card s r)
-      Heart   -> heartCardPicture height (getMinWidth numCards) (Card s r)
-      Spade   -> spadeCardPicture height (getMinWidth numCards) (Card s r)
-      Club    -> clubCardPicture height (getMinWidth numCards) (Card s r)
-
+getCardImage :: Card -> Int -> Float -> Picture
+getCardImage (Card s r) numCards height = case s of
+  Diamond -> cardPicture diamondPicture height (getMinWidth numCards) (Card s r) boldColor
+  Heart   -> cardPicture heartPicture height (getMinWidth numCards) (Card s r) boldColor
+  Spade   -> cardPicture spadePicture height (getMinWidth numCards) (Card s r) darkColor
+  Club    -> cardPicture clubPicture height (getMinWidth numCards) (Card s r) darkColor
 
 getMinWidth :: Int -> Float
 getMinWidth 1        = (-35)
 getMinWidth numCards = (-80) + getMinWidth (numCards - 1)
 
-
-diamondCardPicture :: Float -> Float -> Card -> Picture
-diamondCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+cardPicture :: (Float -> Float -> Picture) -> Float -> Float -> Card -> Color -> Picture
+cardPicture f maxH minW (Card _ r) indColor
+  | (show r) == "10" = pictures [color cardColor $ polygon [(minW,maxH)
                                                                                       ,((minW + 70),maxH)
                                                                                       ,((minW + 70),(maxH - 100))
                                                                                       ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , diamondPicture maxH (minW)
-                                                            , boldRankPicture boldColor maxH minW (show r)
-                                                            , diamondPicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture boldColor (maxH - 80) (minW + 26) (show r)
+                                                            , f maxH (minW)
+                                                            , boldRankPicture indColor maxH minW (show r)
+                                                            , f (maxH - 80) (minW + 54)
+                                                            , boldRankPicture indColor (maxH - 80) (minW + 16) (show r)
                                                             ]
-
-heartCardPicture :: Float -> Float -> Card -> Picture
-heartCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+  | otherwise = pictures [color cardColor $ polygon [(minW,maxH)
                                                                                       ,((minW + 70),maxH)
                                                                                       ,((minW + 70),(maxH - 100))
                                                                                       ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , heartPicture maxH (minW)
-                                                            , boldRankPicture boldColor maxH minW (show r)
-                                                            , heartPicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture boldColor (maxH - 80) (minW + 26) (show r)
-                                                            ]
-
-spadeCardPicture :: Float -> Float -> Card -> Picture
-spadeCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
-                                                                                      ,((minW + 70),maxH)
-                                                                                      ,((minW + 70),(maxH - 100))
-                                                                                      ,(minW,(maxH - 100))
-                                                                                      ]
-                                                            , spadePicture maxH (minW)
-                                                            , boldRankPicture darkColor maxH minW (show r)
-                                                            , spadePicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture darkColor (maxH - 80) (minW + 26) (show r)
-                                                            ]
-
-clubCardPicture :: Float -> Float -> Card -> Picture
-clubCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
-                                                                                      ,((minW + 70),maxH)
-                                                                                      ,((minW + 70),(maxH - 100))
-                                                                                      ,(minW,(maxH - 100))
-                                                                                      ]
-                                                            , clubPicture maxH (minW)
-                                                            , boldRankPicture darkColor maxH minW (show r)
-                                                            , clubPicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture darkColor (maxH - 80) (minW + 26) (show r)
+                                                            , f maxH (minW)
+                                                            , boldRankPicture indColor maxH minW (show r)
+                                                            , f (maxH - 80) (minW + 54)
+                                                            , boldRankPicture indColor (maxH - 80) (minW + 25) (show r)
                                                             ]
 
 
@@ -238,35 +315,162 @@ clubPicture maxHeight minWidth = color darkColor $ polygon [((minWidth + 9),(max
                                                             ,((minWidth + 7),(maxHeight - 1))
                                                             ]
 
+hiddenCardPicture :: Float -> Float -> Picture
+hiddenCardPicture maxH minW = pictures [color cardColor $ polygon [(minW,maxH)
+                                                                  ,((minW + 70),maxH)
+                                                                  ,((minW + 70),(maxH - 100))
+                                                                  ,(minW,(maxH - 100))]
+                                        , color boldColor $ polygon [((minW + 10),(maxH - 10))
+                                                                    , ((minW + 60),(maxH - 10))
+                                                                    , ((minW + 35),(maxH - 50))]
+                                        , color darkColor $ polygon [((minW + 35),(maxH - 50))
+                                                                    ,((minW + 60),(maxH - 90))
+                                                                    ,((minW + 10),(maxH - 90))]]
+
 boldRankPicture :: Color -> Float -> Float -> String -> Picture
-boldRankPicture itemC maxH minW rank
-  | rank == "10" = color itemC $ translate (minW + 22) (maxH - 18) $ scale (0.15) (0.15) $ text rank
-  | otherwise = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
+boldRankPicture itemC maxH minW rank = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
 
 -- Picture Representation of banner "BLACKJACK"
 titlePicture :: Picture
 titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-176) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-174) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-175) (201) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     ]
+                        , color boldColor $ translate (-176) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-174) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (201) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        ]
 
 nextCardButton :: Picture
-nextCardButton = pictures [color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
-                            , color darkColor $ translate (100) (5) $ scale (0.25) (0.25) $ text "Next Card"]
+nextCardButton = pictures [ color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
+                          , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (119) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (121) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (120) (11) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (120) (9)  $ scale (0.25) (0.25) $ text "Next Card"
+                          ]
+
 
 hitMeButton :: Picture
-hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
-                        , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"]
+hitMeButton = pictures [ color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
+                       , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (144) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (146) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (145) (61) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (145) (59) $ scale (0.25) (0.25) $ text "Hit Me"
+                       ]
+
 
 stayButton :: Picture
-stayButton = pictures [color boldColor $ polygon [(100,-50),(300,-50),(300,-100),(100,-100)]
-                      , color darkColor $ translate (170) (-85) $ scale (0.25) (0.25) $ text "Stay"]
+stayButton = pictures [ color boldColor $ polygon [(100,0),(300,0),(300,-50),(100,-50)]
+                      , color darkColor $ translate (170) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (169) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (171) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (170) (-34) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (170) (-36) $ scale (0.25) (0.25) $ text "Stay"
+                      ]
 
-resultsPanel :: String -> Picture
-resultsPanel resultM = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+
+splitButton :: Picture
+splitButton = pictures [ color boldColor $ polygon [(100,-100),(300,-100),(300,-150),(100,-150)]
+                       , color darkColor $ translate (120) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (119) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (121) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (120) (-134) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (120) (-136) $ scale (0.25) (0.25) $ text "Split Deck"
+                       ]
+
+
+numDecksWindow :: Picture
+numDecksWindow = pictures [numDecksLabel
+                          , oneDeckButton
+                          , twoDeckButton
+                          , threeDeckButton
+                          , fourDeckButton
+                          , fiveDeckButton
+                          , sixDeckButton]
+
+numDecksLabel :: Picture
+numDecksLabel = pictures [ color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-201) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-199) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-200) (101) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-200) (99)  $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         ]
+
+
+oneDeckButton :: Picture
+oneDeckButton = pictures [ color boldColor $ polygon [(-170,0),(-130,0),(-130,-40),(-170,-40)]
+                         , color darkColor $ translate (-158) (-32) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-159) (-32) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-157) (-32) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-158) (-31) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-158) (-33) $ scale (0.25) (0.25) $ text "1"
+                         ]
+
+
+twoDeckButton :: Picture
+twoDeckButton = pictures [ color boldColor $ polygon [(-110,0),(-70,0),(-70,-40),(-110,-40)]
+                         , color darkColor $ translate (-98) (-32) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-99) (-32) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-97) (-32) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-98) (-31) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-98) (-33) $ scale (0.25) (0.25) $ text "2"
+                         ]
+
+
+threeDeckButton :: Picture
+threeDeckButton = pictures [ color boldColor $ polygon [(-50,0),(-10,0),(-10,-40),(-50,-40)]
+                           , color darkColor $ translate (-38) (-32) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-39) (-32) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-37) (-32) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-38) (-31) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-38) (-33) $ scale (0.25) (0.25) $ text "3"
+                           ]
+
+
+fourDeckButton :: Picture
+fourDeckButton = pictures [ color boldColor $ polygon [(10,0),(50,0),(50,-40),(10,-40)]
+                          , color darkColor $ translate (22) (-32) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (21) (-32) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (23) (-32) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (22) (-31) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (22) (-33) $ scale (0.25) (0.25) $ text "4"
+                          ]
+
+
+fiveDeckButton :: Picture
+fiveDeckButton = pictures [ color boldColor $ polygon [(70,0),(110,0),(110,-40),(70,-40)]
+                          , color darkColor $ translate (82) (-32) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (81) (-32) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (83) (-32) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (82) (-31) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (82) (-33) $ scale (0.25) (0.25) $ text "5"
+                          ]
+
+
+sixDeckButton :: Picture
+sixDeckButton = pictures [ color boldColor $ polygon [(130,0),(170,0),(170,-40),(130,-40)]
+                         , color darkColor $ translate (142) (-32) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (141) (-32) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (143) (-32) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (142) (-31) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (142) (-33) $ scale (0.25) (0.25) $ text "6"
+                         ]
+
+
+resultsPanel :: String -> (Bool,Bool) -> Picture
+resultsPanel resultM (playerBlackJack,dealerBlackJack)
+  | playerBlackJack == True && dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "You both got BLACKJACK"
+                                                                  , results]
+  | playerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "!!!BLACKJACK!!!"
+                                        , results]
+  | dealerBlackJack == True = pictures [color darkColor $ translate (-350) (-200) $ scale (0.25) (0.25) $ text "Dealer Has BLACKJACK"
+                                        , results]
+  | otherwise = results
+    where
+      results = color darkColor $ translate (-350) (-250) $ scale (0.25) (0.25) $ text resultM
+
+
 
 dealerLabel :: Picture
 dealerLabel = color darkColor $ translate (-150) (150) $ scale (0.25) (0.25) $ text "Dealer Hand"

@@ -1,10 +1,4 @@
 module CardDeckMAC where
-import           System.Random
-
-printRNDNum :: IO ()
-printRNDNum = do
-  num <- randomRIO (1, 100) :: IO Int
-  putStrLn $ "Random number between 1 and 100: " ++ show num
 
 data Suit = Diamond | Heart | Spade | Club
   deriving(Eq, Enum)
@@ -36,7 +30,7 @@ instance Show Rank where
 
 
 
-  
+
 data Card = Card Suit Rank
   deriving(Eq)
 
@@ -68,11 +62,11 @@ addDecks (Deck n) (Deck c) = Deck (n ++ c)
 
 getFirstCard :: Deck -> Card
 getFirstCard (Deck (card:_)) = card
-getFirstCard _ = undefined "Error, no cards"
+getFirstCard _               = undefined "Error, no cards"
 
 
 hasRemainingCards :: Deck -> Int -> Bool
-hasRemainingCards EmptyDeck _ = False
+hasRemainingCards EmptyDeck _    = False
 hasRemainingCards (Deck cards) n = length cards >= n
 
 
@@ -83,14 +77,14 @@ takeXCards (Deck cards) n = Deck (take n cards)
 
 addToRemovedDeck :: Deck -> Deck -> Deck
 addToRemovedDeck (Deck nrmCards) (Deck rmCards) = Deck (nrmCards ++ rmCards)
-addToRemovedDeck (Deck nrmCards) EmptyDeck = Deck (nrmCards)
-addToRemovedDeck EmptyDeck EmptyDeck = EmptyDeck
-addToRemovedDeck EmptyDeck (Deck rmCards) = Deck(rmCards)
+addToRemovedDeck (Deck nrmCards) EmptyDeck      = Deck (nrmCards)
+addToRemovedDeck EmptyDeck EmptyDeck            = EmptyDeck
+addToRemovedDeck EmptyDeck (Deck rmCards)       = Deck(rmCards)
 
 
 removeCard :: Deck -> Int -> Deck
 removeCard (Deck cards) x = Deck (drop x cards)
-removeCard EmptyDeck _ = EmptyDeck
+removeCard EmptyDeck _    = EmptyDeck
 
 dealCard :: Deck -> Deck -> Deck -> (Deck, Deck, Deck)
 dealCard EmptyDeck EmptyDeck (Deck playCards) = (Deck (take 1 playCards), Deck (take 1 playCards), Deck (drop 1 playCards))
@@ -172,7 +166,7 @@ determinResults dealerHand playerHand = go (getHandValue dealerHand) (getHandVal
       | otherwise = DealerWon
 
 mapResults :: Deck -> [Deck] -> [Result]
-mapResults _ [] = []
+mapResults _ []          = []
 mapResults dealer (x:xs) = (determinResults dealer x) : (mapResults dealer xs)
 
 
