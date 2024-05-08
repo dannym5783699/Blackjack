@@ -341,20 +341,44 @@ titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5)
                         ]
 
 nextCardButton :: Picture
-nextCardButton = pictures [color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
-                            , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"]
+nextCardButton = pictures [ color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
+                          , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (119) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (121) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (120) (11) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color darkColor $ translate (120) (9)  $ scale (0.25) (0.25) $ text "Next Card"
+                          ]
+
 
 hitMeButton :: Picture
-hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
-                        , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"]
+hitMeButton = pictures [ color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
+                       , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (144) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (146) (60) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (145) (61) $ scale (0.25) (0.25) $ text "Hit Me"
+                       , color darkColor $ translate (145) (59) $ scale (0.25) (0.25) $ text "Hit Me"
+                       ]
+
 
 stayButton :: Picture
-stayButton = pictures [color boldColor $ polygon [(100,0),(300,0),(300,-50),(100,-50)]
-                      , color darkColor $ translate (170) (-35) $ scale (0.25) (0.25) $ text "Stay"]
+stayButton = pictures [ color boldColor $ polygon [(100,0),(300,0),(300,-50),(100,-50)]
+                      , color darkColor $ translate (170) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (169) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (171) (-35) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (170) (-34) $ scale (0.25) (0.25) $ text "Stay"
+                      , color darkColor $ translate (170) (-36) $ scale (0.25) (0.25) $ text "Stay"
+                      ]
+
 
 splitButton :: Picture
-splitButton = pictures [color boldColor $ polygon [(100,-100),(300,-100),(300,-150),(100,-150)]
-                        , color darkColor $ translate (120) (-135) $ scale (0.25) (0.25) $ text "Split Deck"]
+splitButton = pictures [ color boldColor $ polygon [(100,-100),(300,-100),(300,-150),(100,-150)]
+                       , color darkColor $ translate (120) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (119) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (121) (-135) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (120) (-134) $ scale (0.25) (0.25) $ text "Split Deck"
+                       , color darkColor $ translate (120) (-136) $ scale (0.25) (0.25) $ text "Split Deck"
+                       ]
+
 
 numDecksWindow :: Picture
 numDecksWindow = pictures [numDecksLabel
@@ -366,31 +390,73 @@ numDecksWindow = pictures [numDecksLabel
                           , sixDeckButton]
 
 numDecksLabel :: Picture
-numDecksLabel = color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+numDecksLabel = pictures [ color darkColor $ translate (-200) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-201) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-199) (100) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-200) (101) $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         , color darkColor $ translate (-200) (99)  $ scale (0.25) (0.25) $ text "Select Number of Decks"
+                         ]
+
 
 oneDeckButton :: Picture
-oneDeckButton = pictures [color boldColor $ polygon [(-170,0),(-130,0),(-130,-40),(-170,-40)]
-                          , color darkColor $ translate (-158) (-32) $ scale (0.25) (0.25) $ text "1"]
+oneDeckButton = pictures [ color boldColor $ polygon [(-170,0),(-130,0),(-130,-40),(-170,-40)]
+                         , color darkColor $ translate (-158) (-32) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-159) (-32) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-157) (-32) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-158) (-31) $ scale (0.25) (0.25) $ text "1"
+                         , color darkColor $ translate (-158) (-33) $ scale (0.25) (0.25) $ text "1"
+                         ]
+
 
 twoDeckButton :: Picture
-twoDeckButton = pictures [color boldColor $ polygon [(-110,0),(-70,0),(-70,-40),(-110,-40)]
-                          , color darkColor $ translate (-98) (-32) $ scale (0.25) (0.25) $ text "2"]
+twoDeckButton = pictures [ color boldColor $ polygon [(-110,0),(-70,0),(-70,-40),(-110,-40)]
+                         , color darkColor $ translate (-98) (-32) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-99) (-32) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-97) (-32) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-98) (-31) $ scale (0.25) (0.25) $ text "2"
+                         , color darkColor $ translate (-98) (-33) $ scale (0.25) (0.25) $ text "2"
+                         ]
+
 
 threeDeckButton :: Picture
-threeDeckButton = pictures [color boldColor $ polygon [(-50,0),(-10,0),(-10,-40),(-50,-40)]
-                          , color darkColor $ translate (-38) (-32) $ scale (0.25) (0.25) $ text "3"]
+threeDeckButton = pictures [ color boldColor $ polygon [(-50,0),(-10,0),(-10,-40),(-50,-40)]
+                           , color darkColor $ translate (-38) (-32) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-39) (-32) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-37) (-32) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-38) (-31) $ scale (0.25) (0.25) $ text "3"
+                           , color darkColor $ translate (-38) (-33) $ scale (0.25) (0.25) $ text "3"
+                           ]
+
 
 fourDeckButton :: Picture
-fourDeckButton = pictures [color boldColor $ polygon [(10,0),(50,0),(50,-40),(10,-40)]
-                          , color darkColor $ translate (22) (-32) $ scale (0.25) (0.25) $ text "4"]
+fourDeckButton = pictures [ color boldColor $ polygon [(10,0),(50,0),(50,-40),(10,-40)]
+                          , color darkColor $ translate (22) (-32) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (21) (-32) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (23) (-32) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (22) (-31) $ scale (0.25) (0.25) $ text "4"
+                          , color darkColor $ translate (22) (-33) $ scale (0.25) (0.25) $ text "4"
+                          ]
+
 
 fiveDeckButton :: Picture
-fiveDeckButton = pictures [color boldColor $ polygon [(70,0),(110,0),(110,-40),(70,-40)]
-                          , color darkColor $ translate (82) (-32) $ scale (0.25) (0.25) $ text "5"]
+fiveDeckButton = pictures [ color boldColor $ polygon [(70,0),(110,0),(110,-40),(70,-40)]
+                          , color darkColor $ translate (82) (-32) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (81) (-32) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (83) (-32) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (82) (-31) $ scale (0.25) (0.25) $ text "5"
+                          , color darkColor $ translate (82) (-33) $ scale (0.25) (0.25) $ text "5"
+                          ]
+
 
 sixDeckButton :: Picture
-sixDeckButton = pictures [color boldColor $ polygon [(130,0),(170,0),(170,-40),(130,-40)]
-                          , color darkColor $ translate (142) (-32) $ scale (0.25) (0.25) $ text "6"]
+sixDeckButton = pictures [ color boldColor $ polygon [(130,0),(170,0),(170,-40),(130,-40)]
+                         , color darkColor $ translate (142) (-32) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (141) (-32) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (143) (-32) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (142) (-31) $ scale (0.25) (0.25) $ text "6"
+                         , color darkColor $ translate (142) (-33) $ scale (0.25) (0.25) $ text "6"
+                         ]
+
 
 resultsPanel :: String -> (Bool,Bool) -> Picture
 resultsPanel resultM (playerBlackJack,dealerBlackJack)
