@@ -185,63 +185,37 @@ cardPictures _ (Deck []) = []
 cardPictures height (Deck (c:cs)) = go c (length (c:cs)): cardPictures height (Deck cs)
   where
     go (Card s r) numCards = case s of
-      Diamond -> diamondCardPicture height (getMinWidth numCards) (Card s r)
-      Heart   -> heartCardPicture height (getMinWidth numCards) (Card s r)
-      Spade   -> spadeCardPicture height (getMinWidth numCards) (Card s r)
-      Club    -> clubCardPicture height (getMinWidth numCards) (Card s r)
+      Diamond -> cardPicture diamondPicture height (getMinWidth numCards) (Card s r) boldColor
+      Heart   -> cardPicture heartPicture height (getMinWidth numCards) (Card s r) boldColor
+      Spade   -> cardPicture spadePicture height (getMinWidth numCards) (Card s r) darkColor
+      Club    -> cardPicture clubPicture height (getMinWidth numCards) (Card s r) darkColor
 
 
 getMinWidth :: Int -> Float
 getMinWidth 1        = (-35)
 getMinWidth numCards = (-80) + getMinWidth (numCards - 1)
 
-
-diamondCardPicture :: Float -> Float -> Card -> Picture
-diamondCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+cardPicture :: (Float -> Float -> Picture) -> Float -> Float -> Card -> Color -> Picture
+cardPicture f maxH minW (Card _ r) indColor
+  | (show r) == "10" = pictures [color cardColor $ polygon [(minW,maxH)
                                                                                       ,((minW + 70),maxH)
                                                                                       ,((minW + 70),(maxH - 100))
                                                                                       ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , diamondPicture maxH (minW)
-                                                            , boldRankPicture boldColor maxH minW (show r)
-                                                            , diamondPicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture boldColor (maxH - 80) (minW + 26) (show r)
+                                                            , f maxH (minW)
+                                                            , boldRankPicture indColor maxH minW (show r)
+                                                            , f (maxH - 80) (minW + 54)
+                                                            , boldRankPicture indColor (maxH - 80) (minW + 16) (show r)
                                                             ]
-
-heartCardPicture :: Float -> Float -> Card -> Picture
-heartCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
+  | otherwise = pictures [color cardColor $ polygon [(minW,maxH)
                                                                                       ,((minW + 70),maxH)
                                                                                       ,((minW + 70),(maxH - 100))
                                                                                       ,(minW,(maxH - 100))
                                                                                       ]
-                                                            , heartPicture maxH (minW)
-                                                            , boldRankPicture boldColor maxH minW (show r)
-                                                            , heartPicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture boldColor (maxH - 80) (minW + 26) (show r)
-                                                            ]
-
-spadeCardPicture :: Float -> Float -> Card -> Picture
-spadeCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
-                                                                                      ,((minW + 70),maxH)
-                                                                                      ,((minW + 70),(maxH - 100))
-                                                                                      ,(minW,(maxH - 100))
-                                                                                      ]
-                                                            , spadePicture maxH (minW)
-                                                            , boldRankPicture darkColor maxH minW (show r)
-                                                            , spadePicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture darkColor (maxH - 80) (minW + 26) (show r)
-                                                            ]
-
-clubCardPicture :: Float -> Float -> Card -> Picture
-clubCardPicture maxH minW (Card _ r)= pictures [color cardColor $ polygon [(minW,maxH)
-                                                                                      ,((minW + 70),maxH)
-                                                                                      ,((minW + 70),(maxH - 100))
-                                                                                      ,(minW,(maxH - 100))
-                                                                                      ]
-                                                            , clubPicture maxH (minW)
-                                                            , boldRankPicture darkColor maxH minW (show r)
-                                                            , clubPicture (maxH - 80) (minW + 54)
-                                                            , boldRankPicture darkColor (maxH - 80) (minW + 26) (show r)
+                                                            , f maxH (minW)
+                                                            , boldRankPicture indColor maxH minW (show r)
+                                                            , f (maxH - 80) (minW + 54)
+                                                            , boldRankPicture indColor (maxH - 80) (minW + 25) (show r)
                                                             ]
 
 
@@ -329,9 +303,7 @@ clubPicture maxHeight minWidth = color darkColor $ polygon [((minWidth + 9),(max
                                                             ]
 
 boldRankPicture :: Color -> Float -> Float -> String -> Picture
-boldRankPicture itemC maxH minW rank
-  | rank == "10" = color itemC $ translate (minW + 22) (maxH - 18) $ scale (0.15) (0.15) $ text rank
-  | otherwise = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
+boldRankPicture itemC maxH minW rank = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
 
 -- Picture Representation of banner "BLACKJACK"
 titlePicture :: Picture
