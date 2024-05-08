@@ -7,7 +7,7 @@ import           RegBlackJackGameMAC
 import           ShuffleDeck
 
 
-data World = World {playerHand         :: Deck
+data World = World {playerHand         :: [Deck]
                     , dealerHand       :: Deck
                     , discPile         :: Deck
                     , playDeck         :: Deck
@@ -16,17 +16,24 @@ data World = World {playerHand         :: Deck
                     , blackJackResults :: (Bool,Bool)
                     , deckSelection    :: Bool
                     , possibleDecks    :: [Deck]
+                    , splitOption      :: Bool
                     }
 
 setWorld :: World -> Picture
 setWorld world
   | deckSelection world = pictures [titlePicture, numDecksWindow]
+
+  | splitOption world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton, splitButton]
+                                ++ (cardPictures True 120 (dealerHand world))
+                                ++ (cardPictures False (-60) ((playerHand world) !! 0)))
+
   | playerTurn world = pictures ([titlePicture, dealerLabel, playerLabel, hitMeButton, stayButton]
                                 ++ (cardPictures True 120 (dealerHand world))
-                                ++ (cardPictures False (-60) (playerHand world)))
+                                ++ (cardPictures False (-60) ((playerHand world) !! 0)))
+
   | otherwise = pictures ([titlePicture, dealerLabel, playerLabel, nextCardButton, (resultsPanel (resultMessage world) (blackJackResults world))]
                           ++ (cardPictures False 120 (dealerHand world))
-                          ++ (cardPictures False (-60) (playerHand world)))
+                          ++ (cardPictures False (-60) ((playerHand world) !! 0)))
 
 handleEvent :: Event -> World -> World
 handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
@@ -38,55 +45,70 @@ handleEvent (EventKey (MouseButton LeftButton) Down _ (x,y)) world
     else if (x >= 70 && x <= 110) then getInitialHand 5 world
     else if (x >= 130 && x <= 170) then getInitialHand 6 world
     else world
-  | not (playerTurn world) =
+  | playerTurn world && x >= 100 && x <= 300 =
+    if (y >= 50 && y <= 100) then hitPlayer world
+    else if (y >= (-50) && y <= (0)) then showResults world
+    else if (y >= (-150) && y <= (-100)) then splitHand world
+    else world
+  | otherwise =
     if (x >= 100 && x <= 300 && y >= 0 && y <= 50) then do
       getNextHand world
     else world
-  | otherwise =
-    if (x >= 100 && x <= 300 && y >= 50 && y <= 100) then hitPlayer world
-    else if (x >= 100 && x <= 300 && y >= (-100) && y <= (-50)) then showResults world
-    else world
+
 handleEvent _ world = world
 
+splitHand :: World -> World
+splitHand world = world {playerHand = playerHNew
+                        , discPile = discPNew
+                        , playDeck = playDNew
+                        , splitOption = guiCanSplitDeck (playerHNew !! 0)}
+    where
+      (playerHNew, discPNew, playDNew) = getSplitDecks (guiSplitDeck (playerHand world)) [] (discPile world) (playDeck world)
+
+getSplitDecks :: [Deck] -> [Deck] -> Deck -> Deck -> ([Deck], Deck, Deck)
+getSplitDecks [] accDeck dPile pDeck = (accDeck,dPile,pDeck)
+getSplitDecks (pHand:pHands) [] dPile pDeck = getSplitDecks pHands [pHandNew] discPileNew playDeckNew
+  where
+    (pHandNew, discPileNew, playDeckNew) = dealCard pHand dPile pDeck
+getSplitDecks (pHand:pHands) accDeck dPile pDeck = getSplitDecks pHands (accDeck ++ [pHandNew]) discPileNew playDeckNew
+  where
+    (pHandNew, discPileNew, playDeckNew) = dealCard pHand dPile pDeck
+
+guiSplitDeck :: [Deck] -> [Deck]
+guiSplitDeck []                          = []
+guiSplitDeck (EmptyDeck:_)               = []
+guiSplitDeck ((Deck []):_)               = []
+guiSplitDeck ((Deck (card:cards)):decks) = Deck [card] : Deck (cards) : decks
+
 getInitialHand :: Int -> World -> World
-getInitialHand n world
-  | hasBlackJack playerHandNew && hasBlackJack dealerHandNew = world {playerHand = playerHandNew
+getInitialHand n world = world {playerHand = [playerHandNew]
               , dealerHand = dealerHandNew
               , discPile = discPileNew
               , playDeck = playDeckNew
-              , playerTurn = False
+              , playerTurn = shouldTakeTurn
               , deckSelection = False
-              , blackJackResults = (True,True)
-              , resultMessage = resultMessageNew}
-
-  | hasBlackJack playerHandNew = world {playerHand = playerHandNew
-              , dealerHand = dealerHandNew
-              , discPile = discPileNew
-              , playDeck = playDeckNew
-              , playerTurn = False
-              , deckSelection = False
-              , blackJackResults = (True,False)
-              , resultMessage = resultMessageNew}
-
-  | hasBlackJack dealerHandNew = world {playerHand = playerHandNew
-              , dealerHand = dealerHandNew
-              , discPile = discPileNew
-              , playDeck = playDeckNew
-              , playerTurn = False
-              , deckSelection = False
-              , blackJackResults = (False,True)
-              , resultMessage = resultMessageNew}
-
-  | otherwise = world {playerHand = playerHandNew
-              , dealerHand = dealerHandNew
-              , discPile = discPileNew
-              , playDeck = playDeckNew
-              , playerTurn = True
-              , deckSelection = False
-              , blackJackResults = (False,False)}
+              , blackJackResults = (playerBlackJack, dealerBlackJack)
+              , resultMessage = resultMessageNew
+              , splitOption = ((guiCanSplitDeck playerHandNew) && shouldTakeTurn)}
   where
     (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand ((possibleDecks world) !! (n - 1)) (discPile world)
     resultMessageNew = show (determinResults dealerHandNew playerHandNew)
+    (playerBlackJack, dealerBlackJack) = (hasBlackJack playerHandNew, hasBlackJack dealerHandNew)
+    shouldTakeTurn = (not (playerBlackJack || playerBlackJack))
+
+guiCanSplitDeck :: Deck -> Bool
+guiCanSplitDeck EmptyDeck    = False
+guiCanSplitDeck (Deck [])    = False
+guiCanSplitDeck (Deck cards) = cardEqual (cards !! 0) (cards !! 1)
+
+cardEqual :: Card -> Card -> Bool
+cardEqual (Card _ r1) (Card _ r2)
+  | r1 == r2 = True
+  | r1 == Ten && (r2 == Jack || r2 == Queen || r2 == King) = True
+  | r1 == Jack && (r2 == Ten || r2 == Queen || r2 == King) = True
+  | r1 == Queen && (r2 == Ten || r2 == Jack || r2 == King) = True
+  | r1 == King && (r2 == Ten || r2 == Jack || r2 == Queen) = True
+  | otherwise = False
 
 getShuffledDecks :: Int -> IO Deck
 getShuffledDecks n = do
@@ -95,67 +117,50 @@ getShuffledDecks n = do
 
 hitPlayer :: World -> World
 hitPlayer world =
-  if (canPlayerPlay (playerHand world)) then
-    if (canPlayerPlay (playerHNew)) then world {playerHand = playerHNew
+  if (canPlayerPlay ((playerHand world) !! 0)) then
+    if (canPlayerPlay (playerHNew)) then world {playerHand = [playerHNew]
                                                     , discPile = discPNew
                                                     , playDeck = playDNew}
-    else showResults (world {playerHand = playerHNew
+    else showResults (world {playerHand = [playerHNew]
                                                     , discPile = discPNew
                                                     , playDeck = playDNew})
   else showResults world
     where
-      (playerHNew, discPNew, playDNew) = dealCard (playerHand world) (discPile world) (playDeck world)
+      (playerHNew, discPNew, playDNew) = dealCard ((playerHand world) !! 0) (discPile world) (playDeck world)
 
 showResults :: World -> World
-showResults world = world {dealerHand = dealerHandNew
-                          , discPile = discPileNew
-                          , playDeck = playDeckNew
-                          , playerTurn = False
+showResults world = world {playerTurn = False
+                          , splitOption = False
                           , resultMessage = resultMessageNew}
   where
-    (dealerHandNew, discPileNew, playDeckNew) = takeDealerTurn (dealerHand world) (discPile world) (playDeck world)
-    resultMessageNew = show (determinResults (dealerHand world) (playerHand world))
+    resultMessageNew = show (determinResults (dealerHand world) ((playerHand world) !! 0))
 
 
 getNextHand :: World -> World
 getNextHand world
-  | hasBlackJack playerHandNew && hasBlackJack dealerHandNew = world {playerHand = playerHandNew
+  | length (playerHand world) > 1 = world {playerHand = nextPlayerHand
+                                          , playerTurn = nextShouldTakeTurn
+                                          , blackJackResults = (nextPlayerBlackJack,nextDealerBlackJack)
+                                          , resultMessage = nextResultMessageNew
+                                          , splitOption = ((guiCanSplitDeck (nextPlayerHand !! 0)) && shouldTakeTurn)}
+  |otherwise = world {playerHand = [playerHandNew]
               , dealerHand = dealerHandNew
               , discPile = discPileNew
               , playDeck = playDeckNew
-              , playerTurn = False
-              , deckSelection = False
-              , blackJackResults = (True,True)
-              , resultMessage = resultMessageNew}
-
-  | hasBlackJack playerHandNew = world {playerHand = playerHandNew
-              , dealerHand = dealerHandNew
-              , discPile = discPileNew
-              , playDeck = playDeckNew
-              , playerTurn = False
-              , deckSelection = False
-              , blackJackResults = (True,False)
-              , resultMessage = resultMessageNew}
-
-  | hasBlackJack dealerHandNew = world {playerHand = playerHandNew
-              , dealerHand = dealerHandNew
-              , discPile = discPileNew
-              , playDeck = playDeckNew
-              , playerTurn = False
-              , deckSelection = False
-              , blackJackResults = (False,True)
-              , resultMessage = resultMessageNew}
-
-  | otherwise = world {playerHand = playerHandNew
-              , dealerHand = dealerHandNew
-              , discPile = discPileNew
-              , playDeck = playDeckNew
-              , playerTurn = True
-              , deckSelection = False
-              , blackJackResults = (False,False)}
+              , playerTurn = shouldTakeTurn
+              , blackJackResults = (playerBlackJack, dealerBlackJack)
+              , resultMessage = resultMessageNew
+              , splitOption = ((guiCanSplitDeck playerHandNew) && shouldTakeTurn)}
   where
     (playerHandNew, dealerHandNew, discPileNew, playDeckNew) = dealHand (playDeck world) (discPile world)
     resultMessageNew = show (determinResults dealerHandNew playerHandNew)
+    (playerBlackJack, dealerBlackJack) = (hasBlackJack playerHandNew, hasBlackJack dealerHandNew)
+    shouldTakeTurn = (not (playerBlackJack || dealerBlackJack))
+    nextPlayerHand = drop 1 (playerHand world)
+    (nextPlayerBlackJack, nextDealerBlackJack) = (hasBlackJack (nextPlayerHand !! 0), hasBlackJack (dealerHand world))
+    nextShouldTakeTurn = (not (nextPlayerBlackJack || nextDealerBlackJack))
+    nextResultMessageNew = show (determinResults (dealerHand world) (nextPlayerHand !! 0))
+
 
 
 nextEvent :: Float -> World -> World
@@ -170,7 +175,7 @@ startGUI = do
   fourDeck <- getShuffledDecks 4
   fiveDeck <- getShuffledDecks 5
   sixDeck <- getShuffledDecks 6
-  let startWorld = World EmptyDeck EmptyDeck EmptyDeck EmptyDeck True "" (False,False) True [oneDeck,twoDeck,threeDeck,fourDeck,fiveDeck,sixDeck]
+  let startWorld = World [EmptyDeck] EmptyDeck EmptyDeck EmptyDeck True "" (False,False) True [oneDeck,twoDeck,threeDeck,fourDeck,fiveDeck,sixDeck] False
   play (InWindow "Black Jack" (800, gameHeight) (10,10)) darkTeal 1 startWorld setWorld handleEvent nextEvent
 
 cardPictures :: Bool -> Float -> Deck -> [Picture]
@@ -315,24 +320,28 @@ boldRankPicture itemC maxH minW rank = color itemC $ translate (minW + 16) (maxH
 -- Picture Representation of banner "BLACKJACK"
 titlePicture :: Picture
 titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-176) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-174) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-175) (201) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
-                     ]
+                        , color boldColor $ translate (-176) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-174) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (201) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        ]
 
 nextCardButton :: Picture
 nextCardButton = pictures [color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
-                            , color darkColor $ translate (100) (5) $ scale (0.25) (0.25) $ text "Next Card"]
+                            , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"]
 
 hitMeButton :: Picture
 hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
                         , color darkColor $ translate (145) (60) $ scale (0.25) (0.25) $ text "Hit Me"]
 
 stayButton :: Picture
-stayButton = pictures [color boldColor $ polygon [(100,-50),(300,-50),(300,-100),(100,-100)]
-                      , color darkColor $ translate (170) (-85) $ scale (0.25) (0.25) $ text "Stay"]
+stayButton = pictures [color boldColor $ polygon [(100,0),(300,0),(300,-50),(100,-50)]
+                      , color darkColor $ translate (170) (-35) $ scale (0.25) (0.25) $ text "Stay"]
+
+splitButton :: Picture
+splitButton = pictures [color boldColor $ polygon [(100,-100),(300,-100),(300,-150),(100,-150)]
+                        , color darkColor $ translate (120) (-135) $ scale (0.25) (0.25) $ text "Split Deck"]
 
 numDecksWindow :: Picture
 numDecksWindow = pictures [numDecksLabel
