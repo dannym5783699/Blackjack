@@ -8,6 +8,81 @@ import           ShuffleDeckWIND   -- Import the WIND-specific shuffle function
 import           PlayerDataWIND
 
 
+readSoftMatrix :: IO [[Char]]
+readSoftMatrix = do
+    content <- readFile "docs\\softDecisionMatrix.txt"
+    return (map (filter (/= ' ')) (lines content))
+
+readSplitMatrix :: IO [[Char]]
+readSplitMatrix = do
+    content <- readFile "docs\\splitDecisionMatrix.txt"
+    return (map (filter (/= ' ')) (lines content))
+
+readHardMatrix :: IO [[Char]]
+readHardMatrix = do
+    content <- readFile "docs\\hardDecisionMatrix.txt"
+    return (map (filter (/= ' ')) (lines content))
+
+charToInt :: Char -> Int
+charToInt x = case x of
+                 '0' -> (0)
+                 '1' -> 1
+                 '2' -> 2
+                 '3' -> 3
+                 '4' -> 4
+                 '5' -> 5
+                 '6' -> 6
+                 '7' -> 7
+                 '8' -> 8
+                 '9' -> 9
+                 'A' -> 10
+                 'B' -> 11
+                 'C' -> 12
+                 'D' -> 13
+                 'F' -> 14
+                 'G' -> 15
+                 '+' -> 21
+                 _ -> -1
+
+
+dealerDecision :: Card -> Int -> [Char] -> IO ()
+dealerDecision _ _ [] = return ()
+dealerDecision x acc (y:ys) | snd (cardToInt x) == acc = do
+                           putStrLn ""
+                           putStrLn ("Try " ++  show [y])
+                        | otherwise = dealerDecision x (acc + 1) ys 
+
+softDecision :: Card -> Deck -> [[Char]] -> IO ()
+softDecision _ EmptyDeck _ = return ()
+softDecision _ _ [] = return ()
+softDecision dealer pDeck (x:xs) | snd (getHandValue pDeck) == sum (take 2 (map charToInt x)) = dealerDecision dealer 2 (drop 2 x)
+                                 | otherwise = softDecision dealer pDeck xs
+
+
+splitDecision :: Card -> Deck -> [[Char]] -> IO ()
+splitDecision _ EmptyDeck _ = return ()
+splitDecision _ _ [] = return ()
+splitDecision dealer pDeck (x:xs) | snd (cardToInt (getFirstCard pDeck)) == charToInt (safeHead ('=') x) = dealerDecision dealer 2 (drop 2 x)
+                                  | otherwise = splitDecision dealer pDeck xs
+
+hardDecision :: Card -> Deck -> [[Char]] -> IO ()
+hardDecision _ EmptyDeck _ = return ()
+hardDecision _ _ [] = do 
+                      putStrLn ""
+                      putStrLn "Try S"
+hardDecision dealer pDeck (x:xs) | snd (getHandValue pDeck) == charToInt (safeHead ('=') (drop 1 x)) = dealerDecision dealer 2 (drop 2 x)
+                                 | otherwise = hardDecision dealer pDeck xs
+
+
+determineDecision :: Card -> Deck -> IO ()
+determineDecision dealer player | hasSoft (deckToCards player) = do
+                                    softMat <- readSoftMatrix
+                                    softDecision dealer player softMat
+                                | otherwise = do
+                                    hardMat <- readHardMatrix
+                                    hardDecision dealer player hardMat     
+
+
 startGameLoopWIND :: IO ()
 startGameLoopWIND = do
   putStrLn "Enter number of decks [1-6]"
@@ -92,6 +167,8 @@ printMultiResults dealer (x:xs) = do
                          printResults dealer x
                          printMultiResults dealer xs
 
+
+
 -- Deals out the player and dealers hand alternating cards first to player then to the dealer
 dealHand :: Deck -> Deck -> (Deck, Deck, Deck, Deck)
 dealHand pDeck discPile = (pHand2, dHand2, rmDeck21, pDeck21)
@@ -111,11 +188,11 @@ takeDealerTurn dealerHand discPile playDeck
 
 
 
-handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> IO ([Deck], Deck, Deck)
-handleTurns [] acc disc play = return (acc, disc, play)
-handleTurns (x:xs) acc disc play = do
-                  (player, disc1, play1) <- takePlayerTurn x disc play
-                  handleTurns xs (acc ++ [player]) disc1 play1
+handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> Deck -> IO ([Deck], Deck, Deck)
+handleTurns [] acc disc play _ = return (acc, disc, play)
+handleTurns (x:xs) acc disc play dealer = do
+                  (player, disc1, play1) <- takePlayerTurn x disc play dealer
+                  handleTurns xs (acc ++ [player]) disc1 play1 dealer
 
 
 safeHead :: a -> [a] -> a
@@ -136,16 +213,20 @@ handleSplits playerHands discPile playDeck dealer
                          let finalHand = take (length pHand - 2) pHand ++ [deck1] ++ [deck2]
                          printMultiHands dealer finalHand False
                          handleSplits finalHand disc2 play2 dealer
+                      else if char == 'H' || char == 'h' then do
+                        mat1 <- readSplitMatrix
+                        splitDecision (getFirstCard (dealer)) (playerHands !! (length playerHands - 1)) (mat1)
+                        handleSplits playerHands discPile playDeck dealer
                       else do
-                        handleTurns playerHands [] discPile playDeck
+                        handleTurns playerHands [] discPile playDeck dealer
                   else do
-                    handleTurns playerHands [] discPile playDeck         
+                    handleTurns playerHands [] discPile playDeck dealer         
           | otherwise = do
               return (playerHands, discPile, playDeck)          
 
 -- Opperates the functionality of the Players Turn
-takePlayerTurn :: Deck -> Deck -> Deck -> IO (Deck, Deck, Deck)
-takePlayerTurn playerHand discPile playDeck
+takePlayerTurn :: Deck -> Deck -> Deck -> Deck -> IO (Deck, Deck, Deck)
+takePlayerTurn playerHand discPile playDeck dealer
   | canPlayerPlay playerHand = do
     putStrLn "Would you like a card? ('Y' or 'N')"
     char <- getChar
@@ -157,7 +238,11 @@ takePlayerTurn playerHand discPile playDeck
       _ <- putStrLn "Your New Hand"
       _ <- putStrLn (show playerHand1)
       _ <- putStrLn ""
-      takePlayerTurn playerHand1 discPile1 playDeck1
+      takePlayerTurn playerHand1 discPile1 playDeck1 dealer
+    else if char == 'H' || char == 'h' then do
+       _ <- getChar 
+       determineDecision (safeHead (Card Heart Error) (deckToCards dealer)) playerHand
+       takePlayerTurn playerHand discPile playDeck dealer
     else do
       _ <- getChar
       return (playerHand, discPile, playDeck)

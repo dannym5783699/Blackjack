@@ -1,0 +1,10 @@
+B 2 H H H H H H H H H H
+B 3 H H H H H H H H H H
+B 4 H H H H H H H H H H
+B 5 H H H H H H H H H H
+B 6 H H H H H H H H H H
+B 7 S S S S S S S H H H
+B 8 S S S S S S S S S S
+B 9 S S S S S S S S S S
+B A S S S S S S S S S S
+B B S S S S S S S S S S
