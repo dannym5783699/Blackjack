@@ -14,11 +14,11 @@ data Player = Player {
 -- Function to create a new player with the provided name and 0 wins
 createPlayer :: IO Player
 createPlayer = do
-    putStrLn "Enter your name:"
-    name <- getLine
+    putStrLn "Enter your name:" -- Prompt for entering name.
+    name <- getLine   -- Reading name input from standard input.
     return $ Player name 0  -- Initializes the player with 0 wins
 
 -- Function to increment the win count of a player
 addWin :: Player -> Player
-addWin player = player { wins = wins player + 1 }
+addWin player = player { wins = wins player + 1 } -- Update the wins field in Player.
 
