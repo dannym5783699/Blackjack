@@ -24,4 +24,5 @@ shuffle' xs n gen = let
     (lead, bs) = splitAt j xs
     (x, ys) = if null bs then (error "empty", []) else (safeHead' undefined bs, drop 1 bs)
     in x : shuffle' (lead ++ ys) (n-1) newGen
-    
+
+

@@ -7,6 +7,41 @@ import           PlayerData
 
 import ShuffleDeck 
 
+readMatrix :: IO [[Char]]
+readMatrix = do
+    content <- readFile "docs\\decisionMatrix.txt"
+    return (map (filter (/= ' ')) (lines content))
+
+
+charToInt :: Char -> Int
+charToInt x = case x of
+                 '0' -> (0)
+                 '1' -> 1
+                 '2' -> 2
+                 '3' -> 3
+                 '4' -> 4
+                 '5' -> 5
+                 '6' -> 6
+                 '7' -> 7
+                 '8' -> 8
+                 '9' -> 9
+                 'A' -> 10
+                 'B' -> 11
+                 'C' -> 12
+                 'D' -> 13
+                 'F' -> 14
+                 'G' -> 15
+                 '+' -> 21
+                 _ -> -1
+                
+
+dealerDecision :: Card -> [Char] -> IO ()
+dealerDecision _ [] = return ()
+dealerDecision x (y:ys) | snd (cardToInt x) == (charToInt y) = do
+                           putStrLn [y]
+                        | otherwise = dealerDecision   x ys 
+
+
 startGameLoopMAC :: IO ()
 startGameLoopMAC = do
   putStrLn "Enter number of decks [1-6]"
