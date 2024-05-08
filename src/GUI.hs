@@ -331,19 +331,24 @@ boldRankPicture :: Color -> Float -> Float -> String -> Picture
 boldRankPicture itemC maxH minW rank = color itemC $ translate (minW + 16) (maxH - 18) $ scale (0.15) (0.15) $ text rank
 
 -- Picture Representation of banner "BLACKJACK"
+titlePicture :: Picture
+titlePicture = pictures [ color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-176) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-174) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (201) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (199) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        , color boldColor $ translate (-175) (200) $ scale (0.5) (0.5) $ text "BLACKJACK"
+                        ]
+
 nextCardButton :: Picture
 nextCardButton = pictures [ color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
-                          , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color darkColor $ translate (119) (10) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color darkColor $ translate (121) (10) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color darkColor $ translate (120) (11) $ scale (0.25) (0.25) $ text "Next Card"
-                          , color darkColor $ translate (120) (9)  $ scale (0.25) (0.25) $ text "Next Card"
+                          , color boldColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color boldColor $ translate (119) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color boldColor $ translate (121) (10) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color boldColor $ translate (120) (11) $ scale (0.25) (0.25) $ text "Next Card"
+                          , color boldColor $ translate (120) (9)  $ scale (0.25) (0.25) $ text "Next Card"
                           ]
 
-
-nextCardButton :: Picture
-nextCardButton = pictures [color boldColor $ polygon [(100,50),(300,50),(300,0),(100,0)]
-                            , color darkColor $ translate (120) (10) $ scale (0.25) (0.25) $ text "Next Card"]
 
 hitMeButton :: Picture
 hitMeButton = pictures [color boldColor $ polygon [(100,100),(300,100),(300,50),(100,50)]
