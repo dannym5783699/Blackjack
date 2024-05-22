@@ -69,7 +69,8 @@ splitDecision dealer pDeck (x:xs) | snd (cardToInt (getFirstCard pDeck)) == char
 hardDecision :: Card -> Deck -> [[Char]] -> IO ()
 hardDecision _ EmptyDeck _ = return ()
 hardDecision _ _ [] = do 
-                      putStrLn "S"
+                      putStrLn ""
+                      putStrLn "Try S"
 hardDecision dealer pDeck (x:xs) | snd (getHandValue pDeck) == charToInt (safeHead ('=') (drop 1 x)) = dealerDecision dealer 2 (drop 2 x)
                                  | otherwise = hardDecision dealer pDeck xs
 
@@ -177,8 +178,8 @@ takeDealerTurn dealerHand discPile playDeck
       (dealerHand1, discPile1, playDeck1) = dealCard dealerHand discPile playDeck
 
 -- Opperates the functionality of the Players Turn
-takePlayerTurn :: Deck -> Deck -> Deck -> IO (Deck, Deck, Deck)
-takePlayerTurn playerHand discPile playDeck
+takePlayerTurn :: Deck -> Deck -> Deck -> Deck -> IO (Deck, Deck, Deck)
+takePlayerTurn playerHand discPile playDeck dealer
   | canPlayerPlay playerHand = do
     putStrLn "Would you like a card? ('Y' or 'N')"
     char <- getChar
@@ -190,7 +191,11 @@ takePlayerTurn playerHand discPile playDeck
       _ <- putStrLn "Your New Hand"
       _ <- putStrLn (show playerHand1)
       _ <- putStrLn ""
-      takePlayerTurn playerHand1 discPile1 playDeck1
+      takePlayerTurn playerHand1 discPile1 playDeck1 dealer
+    else if char == 'H' || char == 'h' then do
+       _ <- getChar 
+       determineDecision (safeHead (Card Heart Error) (deckToCards dealer)) playerHand
+       takePlayerTurn playerHand discPile playDeck dealer 
     else do
       _ <- getChar
       return (playerHand, discPile, playDeck)
@@ -218,9 +223,9 @@ handleSplits playerHands discPile playDeck dealer
                         splitDecision (getFirstCard (dealer)) (playerHands !! (length playerHands - 1)) (mat1)
                         handleSplits playerHands discPile playDeck dealer   
                       else do
-                        handleTurns playerHands [] discPile playDeck
+                        handleTurns playerHands [] discPile playDeck dealer
                   else do
-                    handleTurns playerHands [] discPile playDeck         
+                    handleTurns playerHands [] discPile playDeck dealer        
           | otherwise = do
               return (playerHands, discPile, playDeck)          
 
@@ -239,11 +244,11 @@ printMultiResults dealer (x:xs) = do
                          printMultiResults dealer xs
 
 
-handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> IO ([Deck], Deck, Deck)
-handleTurns [] acc disc play = return (acc, disc, play)
-handleTurns (x:xs) acc disc play = do
-                  (player, disc1, play1) <- takePlayerTurn x disc play
-                  handleTurns xs (acc ++ [player]) disc1 play1
+handleTurns :: [Deck] -> [Deck] -> Deck -> Deck -> Deck -> IO ([Deck], Deck, Deck)
+handleTurns [] acc disc play _ = return (acc, disc, play)
+handleTurns (x:xs) acc disc play dealer = do
+                  (player, disc1, play1) <- takePlayerTurn x disc play dealer
+                  handleTurns xs (acc ++ [player]) disc1 play1 dealer
 
 
 

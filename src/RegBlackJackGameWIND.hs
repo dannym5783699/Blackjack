@@ -203,7 +203,7 @@ handleSplits :: [Deck] -> Deck -> Deck -> Deck -> IO ([Deck], Deck, Deck)
 handleSplits playerHands discPile playDeck dealer
           | hasPlayable playerHands = do
                  if canSplit playerHands then do
-                     putStrLn "Would you like to split? ('Y' or 'N')"
+                     putStrLn "Would you like to split? ('Y' or 'N'), type 'H' for help"
                      char <- getChar
                      _ <- getChar
                      if char == 'Y' || char == 'y' then do
@@ -228,7 +228,7 @@ handleSplits playerHands discPile playDeck dealer
 takePlayerTurn :: Deck -> Deck -> Deck -> Deck -> IO (Deck, Deck, Deck)
 takePlayerTurn playerHand discPile playDeck dealer
   | canPlayerPlay playerHand = do
-    putStrLn "Would you like a card? ('Y' or 'N')"
+    putStrLn "Would you like a card? ('Y' or 'N'), type 'H' for help"
     char <- getChar
     if char == 'Y' || char == 'y'
     then do
